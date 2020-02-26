@@ -1,23 +1,50 @@
 from copy import deepcopy
 
-map1 = {'A': ['B', 'C', 'H'],
-         'B': ['A', 'D', 'E', 'F'],
-         'C': ['A', 'B'],
-         'D': ['A'],
-         'E': ['D', "G"],
-         'F': ['H', 'B'],
-         'G': ['D', 'A'],
-         'H': ['E']}
+map1 = {'Arad': ['Sibiu', 'Timisoara', 'Zerind'],
+        'Bucharest': ['Fagaras', 'Urziceni', 'Giurgiu'],
+        'Craiova': ['Pitesti', 'Rimnicu Vilcea', 'Drobeta'],
+        'Drobeta': ['Craiova', 'Mehadia'],
+        'Eforie': ['Hirsova'],
+        'Fagaras': ['Sibiu', 'Bucharest'],
+        'Giurgiu':  ['Bucharest'],
+        'Hirsova': ['Eforie', 'Urziceni'],
+        'Iasi': ['Neamt', 'Vaslui'],
+        'Lugoj': ['Timisoara', 'Mehadia'],
+        'Mehadia': ['Drobeta',  'Lugoj'],
+        'Neamt': ['Iasi'],
+        'Oradea': ['Zerind', 'Sibiu'],
+        'Pitesti': ['Rimnicu Vilcea', 'Bucharest', 'Craiova'],
+        'Rimnicu Vilcea': ['Sibiu', 'Pitesti', 'Craiova'],
+        'Sibiu': ['Fagaras', 'Rimnicu Vilcea', 'Oradea', 'Arad'],
+        'Timisoara': ['Arad', 'Lugoj'],
+        'Urziceni': ['Hirsova', 'Vaslui', 'Bucharest'],
+        'Vaslui': ['Iasi', 'Urziceni'],
+        'Zerind': ['Arad', 'Oradea']
+        }
 
 straightDistance = {
-    'A': 3,
-    'B': 55,
-    'C': 6,
-    'D': 5,
-    'E': 19,
-    'G': 10,
-    'H': 15
+    'Arad': 366,
+    'Bucharest': 0,
+    'Craiova': 160,
+    'Drobeta': 242,
+    'Eforie': 161,
+    'Fagaras': 176,
+    'Giurgiu':  77,
+    'Hirsova': 151,
+    'Iasi': 226,
+    'Lugoj': 244,
+    'Mehadia': 241,
+    'Neamt': 234,
+    'Oradea': 380,
+    'Pitesti': 100,
+    'Rimnicu Vilcea': 193,
+    'Sibiu': 253,
+    'Timisoara': 329,
+    'Urziceni': 80,
+    'Vaslui': 199,
+    'Zerind': 374
 }
+
 
 class Paths(object):
     'this is used for remembering the paths'
@@ -33,12 +60,13 @@ class Paths(object):
             if self.straightDistance[self.paths[i][-1]] <= shortest:
                 shortest = self.straightDistance[self.paths[i][-1]]
                 bestPathIndex = i
-        print('GetBestPath - the best path: ', self.paths[bestPathIndex])         
+        print('GetBestPath - the best path: ', self.paths[bestPathIndex])
         return self.paths.pop(bestPathIndex)
 
     def updatePaths(self, newPath):
         self.paths.append(newPath)
         print('UpdatePath - self.paths: ', self.paths)
+
 
 def greedyAlgorithm(map, startPoint, destination, heuristicDistance):
     if straightDistance == destination:
@@ -48,7 +76,7 @@ def greedyAlgorithm(map, startPoint, destination, heuristicDistance):
     explored = []
     smartPath = Paths(startPoint, heuristicDistance)
     print('Paths', smartPath.paths)
-   
+
     while len(explored) != len(heuristicDistance)+1:
         path = smartPath.getBestPath()
         explored.append(path[-1])
@@ -65,7 +93,5 @@ def greedyAlgorithm(map, startPoint, destination, heuristicDistance):
     returnVal = 'No possible path founded'
     return returnVal
 
-# buildMap()
-
-answer = greedyAlgorithm(map1, 'A', 'F', straightDistance)
+answer = greedyAlgorithm(map1, 'Arad', 'Bucharest', straightDistance)
 print(answer)
