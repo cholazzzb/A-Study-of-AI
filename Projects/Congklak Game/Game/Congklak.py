@@ -1,3 +1,8 @@
+'''
+WARNING !!!
+This code will error if you change the startBoard value
+'''
+
 from copy import deepcopy
 from numpy.random import randint #randint(a,b,c), a is smallest value, b is biggest values, c is how much the random number is generated in list/array 
 
@@ -42,7 +47,6 @@ class Congklak(object):
         self.board[player-1][decision-1] = 0
 
         # print("self.container", self.container)
-        print("Initial Board", self.board)
 
         # move the marbles
         while self.container > 0:
@@ -74,34 +78,42 @@ class Congklak(object):
         self.lastDecision = decision
 
         print("New Board", self.board)
-        print("LAST INDEX - player", self.player, "last house", decision)
-        print("")
+        print("Last Index - player", self.player, "last house", self.lastDecision)
 
         # print("Total new marbles = ", self.board[player-1][decision-1])
         self.endMove()
 
     def endMove(self):
 
+        print("total marble in the last house", self.board[self.player-1][self.lastDecision-1])
+
         # end in the warehouse
         if self.lastDecision == 8:
             print("END IN WAREHOUSE")
+            if self.turn == 1:
+                player1Move()
+            else:
+                player2Move()
 
         # Move again at the last house
-        elif self.board[self.player-1][self.lastDecision-1] != 0:
-            # print("LAST INDEX", self.player, self.lastDecision)
+        elif self.board[self.player-1][self.lastDecision-1]-1 != 0:
+            print("MOVE AGAIN")
             self.move(self.player, self.lastDecision)
 
         # empty in own house
         elif self.turn == self.player:
             print("END IN OWN HOUSE")
+            self.board[self.player-1][self.lastDecision-1] += self.board[(self.player%2)][self.lastDecision-1] 
+            self.board[(self.player%2)][self.lastDecision-1] = 0           
             print('End Board', self.board)
+            print("")
             return 0
 
         # empty in enemy house
         else:
             print('END IN ENEMY HOUSE')
-            self.board[self.player-1][self.lastDecision-1] += self.board[(self.player%2)+1][self.lastDecision-1] 
-            print('End Board', self.board)        
+            print('End Board', self.board)
+            print("")
             return 0
 
     def checkFinish(self):
@@ -116,41 +128,65 @@ class Congklak(object):
 
 Game = Congklak(startBoard) 
 
+# Check if there any marble in the house (1 = there is, 0 = every house is null)
+def checkHouse(player):
+    # print(Game.board)
+    sumNull = 0
+    for i in range(0, 7):
+        # print (Game.board[player-1][i])
+        if Game.board[player-1][i] == 0:
+            sumNull += 1
+    # print(sumNull)        
+    if sumNull == 7:
+        # print("TRUE")
+        return 0
+    else:
+        return 1
+
+# Choose random index of array that have value not zero 
 def randomValidIndex(player):
-    index = randint(1,7)
-    # print(randint(1,7))
-    if Game.board[player-1][index] == 0:
-        # print("the house is empty!")
-        index = randint(1,7)
-        # print(randint(1,7))
-        randomValidIndex(player)
-    return index
+    validIndex = []
+    for i in range(0,7):
+        if Game.board[player-1][i] != 0:
+            validIndex.append(i)
 
+    index = randint(0,len(validIndex))
+    return validIndex[index] + 1
+
+# AI 1 (random valid move)
 def player1Move():
-    print("PLAYER 1 IS MOVE")
-    decision = randomValidIndex(1)
-    print(decision)
-    Game.setTurn(1)
-    Game.move(1, decision)
+    # print(checkHouse(1))
+    if checkHouse(1) == 1:
+        print("")
+        print("[PLAYER 1 IS MOVE]")
+        decision = randomValidIndex(1)
+        print("Initial Board", Game.board)
+        print("decision", decision)
+        Game.setTurn(1)
+        Game.move(1, decision)
 
+# AI 2 (random valid move)
 def player2Move():
-    print("PLAYER 2 IS MOVE")
-    decision = randomValidIndex(2)
-    print(decision)
-    Game.setTurn(2)
-    Game.move(2, decision)
+    if checkHouse(2) == 1:
+        print("")
+        print("[PLAYER 2 IS MOVE]")
+        decision = randomValidIndex(2)
+        print("Initial Board", Game.board)
+        print("decision", decision)
+        Game.setTurn(2)
+        Game.move(2, decision)
 
 def playRandomGame():
     finish = 0
     while finish == 0:
         player1Move()
         finish = Game.checkFinish()
-        print('finish', finish)
+        # print('finish', finish)
         if finish == 1 :
             break
         player2Move()
         finish = Game.checkFinish()
-        print('finish', finish)
+        # print('finish', finish)
         if finish == 1:
             break
     if Game.board[0][7] > 49:
