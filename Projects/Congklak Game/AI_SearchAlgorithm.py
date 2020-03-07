@@ -1,11 +1,3 @@
-'''
-WARNING !!!
-This code will error if you change the startBoard value
-'''
-
-from copy import deepcopy
-from numpy.random import randint #randint(a,b,c), a is smallest value, b is biggest values, c is how much the random number is generated in list/array 
-
 ## -- Starting Board-- ##
 # startBoard[0] = player 1
 # startBoard[1] = player 2
@@ -15,7 +7,7 @@ startBoard = [
     [7,7,7,7,7,7,7,0]
 ]
 
-class Congklak(object):
+class SearchAlgorithmAI(object):
     'Congklak game class'
 
     '''
@@ -34,11 +26,22 @@ class Congklak(object):
         self.lastDecision = 0 # between 1-8
         self.gameNotation = []
 
+    def getBoard(self):
+        return self.board
+
+    def getTurn(self):
+        return self.turn
+    
+    def getLastDecision(self):
+        return self.lastDecision
+
     def setTurn(self, turn):
         self.turn = turn
     
     # player : 1-2, decision : 1-7
     def move(self, player, decision):
+        self.gameNotation.append(["Player " + str(player), decision])
+
         if player > 2 or decision > 7:
             print("the player or decision is not valid!")
             return 0
@@ -173,6 +176,7 @@ def player2Move():
         decision = randomValidIndex(2)
         print("Initial Board", Game.board)
         print("decision", decision)
+        # To move the marble
         Game.setTurn(2)
         Game.move(2, decision)
 
@@ -197,3 +201,7 @@ def playRandomGame():
 
 Winner = playRandomGame()
 print('The Winner is player : ', Winner)
+
+print(Game.gameNotation)
+# for i in range (0, len(Game.gameNotation)):
+#     print(Game.gameNotation[i])
