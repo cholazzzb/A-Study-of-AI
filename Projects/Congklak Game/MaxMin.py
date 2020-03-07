@@ -75,9 +75,9 @@ class Congklak(object):
             print("the player or decision is not valid!")
             return 0
         
-        print('')
-        print('Initial Board', self.__virtualBoard)
-        print('Decision: Region =', player, 'House =', decision)
+        # print('')
+        # print('Initial Board', self.__virtualBoard)
+        # print('Decision: Region =', player, 'House =', decision)
 
         # get the marbles
         self.container = self.__virtualBoard[player-1][decision-1]
@@ -111,17 +111,16 @@ class Congklak(object):
         # Set the last decision 
         self.lastDecision = decision
 
-        print("New Board", self.__virtualBoard)
-        print("Last Index: Region =", self.player, "House = ", self.lastDecision)
+        # print("New Board", self.__virtualBoard)
+        # print("Last Index: Region =", self.player, "House = ", self.lastDecision)
 
-        print("total marble in the last house", self.__virtualBoard[self.player-1][self.lastDecision-1])
+        # print("total marble in the last house", self.__virtualBoard[self.player-1][self.lastDecision-1])
 
         # End condition
         # end in the warehouse
         if self.lastDecision == 8:
-            print("END IN WAREHOUSE")
-            newData.append(self.__virtualBoard)
-            newData.append(self.__virtualBoard[player-1][7] - self.board[player-1][7])            
+            # print("END IN WAREHOUSE") 
+            newData.append(self.__virtualBoard)         
             return newData
             # if self.turn == 1:
             #     player1Move()
@@ -130,26 +129,23 @@ class Congklak(object):
 
         # Move again at the last house
         if self.__virtualBoard[self.player-1][self.lastDecision-1]-1 != 0:
-            print("MOVE AGAIN")
+            # print("MOVE AGAIN")
             self.move(self.player, self.lastDecision)
 
         # empty in own house
         if self.turn == self.player:
-            print("END IN OWN HOUSE")
-            self.__virtualBoard[self.player-1][self.lastDecision-1] += self.board[(self.player%2)][self.lastDecision-1] 
-            self.__virtualBoard[(self.player%2)][self.lastDecision-1] = 0           
-            print('End Board', self.__virtualBoard)
-            print("")
+            # print("END IN OWN HOUSE")         
+            # print('End Board', self.__virtualBoard)
+            # print("")
             newData.append(self.__virtualBoard)
             return newData
 
         # empty in enemy house
         else:
-            print('END IN ENEMY HOUSE')
-            print('End Board', self.__virtualBoard)
-            print("")
+            # print('END IN ENEMY HOUSE')
+            # print('End Board', self.__virtualBoard)
+            # print("")
             newData.append(self.__virtualBoard)
-            newData.append(self.__virtualBoard[player-1][7] - self.board[player-1][7])            
             return newData
 
     def checkFinish(self):
@@ -167,9 +163,12 @@ class Congklak(object):
             self.__virtualBoard = deepcopy(self.board)
 
             # get Virtual Board from moving a marble house
-            self.__max1.append(self.move(1, i))
+            newMax = self.move(1, i)
+            newMax.append(self.__virtualBoard[1][7] - self.board[1][7])
+            self.__max1.append(newMax)
             # print(newMax1)
-        print(self.__max1)
+        for i in range (0, 7):
+            print(self.__max1[i])
             # print(self.__virtualBoard)
 
         '''
@@ -190,9 +189,15 @@ class Congklak(object):
         for i in range (1,8):
             self.__virtualBoard = deepcopy(self.__max1[0][1])
             newMin = self.move(2,i)
-            newMin.append(self.__virtualBoard[1][i-1] - self.board[1][i-1])
-            self.__min1.append(self.move(2, i))
-        print("MIN1", self.__min1)
+            newMin.append(self.__virtualBoard[1][7] - self.board[1][7])
+            self.__min1.append(newMin)
+
+        # self.__virtualBoard = deepcopy(self.__max1[0][1])
+        # newMin = self.move(2,1)
+        # newMin.append(self.__virtualBoard[1][1] - self.board[1][i-1])
+        # self.__min1.append(newMin)
+        for i in range (0,7):
+            print("MIN1", self.__min1[i])
 
 
     def updateMax2(self):
