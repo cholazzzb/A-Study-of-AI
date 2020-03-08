@@ -1,19 +1,18 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun Feb 23 08:04:48 2020
+Updated on Sun March 08 22:04:48 2020
 
-@author: Toro
+@author: Cool Team
 """
 
 from numpy.random import randint #randint(a,b,c), a is smallest value, b is biggest values, c is how much the random number is generated in list/array 
 from congklak_model import CongklakModel
 from congklak_player import CongklakPlayer
-from MaxMin import AI
 
 from copy import deepcopy
 import sys
 
-class CongklakPlayer3(CongklakPlayer, AI):
+class CongklakPlayer3(CongklakPlayer):
 
     ## ----- AI CODE -----
     __virtualBoard = [] # For virtualizing new board 2x8 array
@@ -24,9 +23,10 @@ class CongklakPlayer3(CongklakPlayer, AI):
     __warehouseMax = []
     __warehouseMin = []
     __delta = []
+    __index = []
     
     def __init__(self):
-        super().__init__('Toro AI')
+        super().__init__('Cool AI')
         
         self.board = []
         self.container = []
@@ -34,6 +34,7 @@ class CongklakPlayer3(CongklakPlayer, AI):
         self.player = 1 # Player 1 or 2 daerah lubang
         self.lastDecision = 0 # between 1-8
         self.gameNotation = []
+        self.totalTurn = 0
 
 
     '''
@@ -147,7 +148,7 @@ class CongklakPlayer3(CongklakPlayer, AI):
             #     player2Move()
 
         # Move again at the last house
-        if self.__virtualBoard[self.player-1][self.lastDecision-1]-1 != 0:
+        if self.__virtualBoard[self.player-1][self.lastDecision-1]-1 == 0:
             # print("MOVE AGAIN")
             return self.move(self.player, self.lastDecision)
 
@@ -176,28 +177,35 @@ class CongklakPlayer3(CongklakPlayer, AI):
 
     def updateMax1(self):
         print('----- UPDATE Max1 -----')
+        rule = 0
+        if self.nomor == 0:
+            rule = 1
+        else:
+            rule = 2
 
-        self.turn = 1
+        self.turn = rule
         self.__max1 = []
+        self.__virtualBoard = deepcopy(self.board)
+        print("THE BOARD", self.__virtualBoard)
 
-        for i in range (1,8):
+        for i in range (1, self.totalNotNullHouse(rule)+1):
             # print('-----DECISION-----', i)
             # Deep copy the real board to virtualBoard
             self.__virtualBoard = deepcopy(self.board)
-
-            notNullHouseMax = self.notNull(1, i-1) 
+            # self.totalNotNullHouse(1)
+            notNullHouseMax = self.notNull(rule, i) 
 
             # get Virtual Board from moving a marble house
             newMax = self.setNewDataIndex(notNullHouseMax)
             newMax.append(self.move(1, notNullHouseMax))
-            newMax.append(self.__virtualBoard[1][7] - self.board[1][7])
+            newMax.append(self.__virtualBoard[0][7] - self.board[0][7])
             self.__max1.append(newMax)
         
-        for i in range (0, 7):
+        for i in range (0, len(self.__max1)):
             print(self.__max1[i])
 
         '''
-        Priority Queue
+        Priority Queue  
         '''
         # test = PriorityQueue()
         # test.put([110, "test"])
@@ -207,7 +215,17 @@ class CongklakPlayer3(CongklakPlayer, AI):
 
     def updateMin1(self):
         print('----- UPDATE Min1 -----')
-        self.turn = 2
+        rule = 0
+        if self.nomor == 0:
+            rule = 2
+        else:
+            rule = 1
+
+        self.turn = rule
+        self.__warehouseMax = []
+        self.__warehouseMin = []
+        self.__delta = []
+        self.__index = []
 
         # Loop for all Max 
         for max1Index in range (0,len(self.__max1)):
@@ -220,12 +238,15 @@ class CongklakPlayer3(CongklakPlayer, AI):
             for langkahCoba in range (1, 8):
                 self.__virtualBoard = deepcopy(self.__max1[max1Index][1])
                 # Memastika isi lubang tidak kosong
-                langkahCoba = self.notNull(2, langkahCoba)
+                langkahCoba = self.notNull(rule, langkahCoba)
                 # print("HRSNYA G NOL", self.__virtualBoard, langkahCoba)
                 # print("pilihan", langkahCoba)
                 # print("isi" ,self.__virtualBoard[1][langkahCoba-1])
-                self.__min1.append(self.move(2, langkahCoba))         
-            
+                if langkahCoba == 999:
+                    self.__min1.append(self.__virtualBoard)         
+                else:
+                    self.__min1.append(self.move(rule, langkahCoba))         
+                
             # Dicari nilai delta terbesar dari self.__min1
             biggestIndex = 0
             biggestValue = -100
@@ -240,62 +261,29 @@ class CongklakPlayer3(CongklakPlayer, AI):
 
             self.__warehouseMax.append(self.__min1[biggestIndex][0][7])
             self.__warehouseMin.append(self.__min1[biggestIndex][1][7])
-        
+            self.__index.append(self.__max1[max1Index][0])
         # print(len(self.__warehouseMax))
 
         for indexWarehouseMaxMin in range (0, len(self.__warehouseMax)):
             self.__delta.append(self.__warehouseMax[indexWarehouseMaxMin] - self.__warehouseMin[indexWarehouseMaxMin])
 
-            print('WAREHOUSEMAX', self.__warehouseMax[indexWarehouseMaxMin])
-            print('WAREHOUSEMIN', self.__warehouseMin[indexWarehouseMaxMin])
+        # To Print
+        print("LEN INDEX-MAX-MIN-DELTA", len(self.__warehouseMax), len(self.__warehouseMin), len(self.__delta))
+        for i in range (0, len(self.__index)):
+            print('INDEX', self.__index, self.nomor)
+        print('')
+  
+        for i in range (0, len(self.__warehouseMax)):
+            print('WAREHOUSEMAX', self.__warehouseMax[i])
+        print('')
+
+        for i in range (0, len(self.__warehouseMin)):
+            print('WAREHOUSEMIN', self.__warehouseMin[i])
+        print('')
+
+        for i in range (0, len(self.__delta)):
             print('DELTA', self.__delta[indexWarehouseMaxMin])
-            print('')
-
-            # for i in range(0, 7):
-            #     theNewBoard = move(2, minR)
-            #     self.__warehouseMax = 
-            '''
-            # Isi minRAM [index max, deltaTabungan, Tabungan1, Tabungan2]
-            # loop to test all possibilities from minRAMIndex
-            for i in range (1,8): 
-                # Copy last board from __max1 array to virtualBoard
-                self.__virtualBoard = deepcopy(self.__max1[minRAMIndex][1])
-
-                # If the house is empty skip to check
-                # print('INI I NYA', i)
-                notNullHouseMin = self.notNull(2, i-1)
-                # print('APAKAH 0', notNullHouseMin)
-                # save the last board after checking to @newMin
-                newMin = [minRAMIndex+1]
-                newMin.append(self.move(2, notNullHouseMin))
-                # put in the delta
-                newMin.append(self.__virtualBoard[1][7] - self.board[1][7])
-                # put the newdata to @self.__min1 array
-                self.__min1.append(newMin)
-                # print("LEN MIN", len(self.__min1))
-
-            # Get the biggest delta from self.__min1
-            for i in range(0, len(self.__min1)):
-
-                biggest = self.__min1[i][2] # variable to save biggest delta value
-                biggestIndex = 0 # variable to save the biggest index
-                    
-                for u in range (0, len(self.__min1)):
-                    if self.__min1[u][2] > biggest:
-                        biggest = self.__min1[u][2]
-                        biggestIndex = u
-                    # print("BIGGEST", biggest)
-                    # print("BIGGEST INDEX", biggestIndex)
-
-            newMaxMinRAM = []
-            newMaxMinRAM.append(biggestIndex+1) # Tell the best house index that have the best result
-            newMaxMinRAM.append(self.__min1[biggestIndex])
-            self.__maxMinRAM.append(newMaxMinRAM)
-            
-        for i in range (0, len(self.__maxMinRAM)):
-            print("MinRAM", self.__maxMinRAM[i])
-            '''
-
+        print('')
 
     def updateMax2(self):
         print('----- UPDATE Max2 -----')           
@@ -305,25 +293,39 @@ class CongklakPlayer3(CongklakPlayer, AI):
         print('----- SEARCH ALGORITHMS STARTED -----')
         self.updateMax1()
         self.updateMin1()
-        # theBest = -100
-        # theBestIndex = 0
-        # print('LEN MAXMIN RAM', len(self.__maxMinRAM))
-        # for i in range(0, len(self.__maxMinRAM)):
-        #     if self.__maxMinRAM[i][1][1][0][7] - self.__maxMinRAM[i][1][1][1][7] > theBest:
-        #         theBest = self.__maxMinRAM[i][1][1][0][7] - self.__maxMinRAM[i][1][1][1][7]
-        #         theBestIndex = self.__maxMinRAM[i][1][0]
-        # return theBestIndex 
-        # self.updateMax2()
+
+        # Search the biggest delta
+        theBestIndex = 0
+        theBestValue = -98
+
+        for index in range(0, len(self.__delta)):
+            if self.__delta[index] > theBestValue:
+                theBestIndex = index
+        return self.__index[theBestIndex]
+
+    # Count not number of not null house 
+    def totalNotNullHouse(self, player):
+        theTotal = 0
+        for i in range(0, 7):
+            # print(self.__virtualBoard)
+            if self.__virtualBoard[player-1][i] != 0:
+                theTotal += 1
+        # print('LOOK AT THIS', self.__virtualBoard)
+        # print("theTOTAL", theTotal)
+        return theTotal
 
     # To skip null house
     def notNull(self, player, house):
-        if self.checkHouse(player, house):
-            house += 1
-            if house > 7:
-                house -= 7
-            return self.notNull(player, house)
+        if self.totalNotNullHouse(player) != 0:
+            if self.checkHouse(player, house):
+                house += 1
+                if house > 7:
+                    house -= 7
+                return self.notNull(player, house)
+            else:
+                return house-1
         else:
-            return house
+            return 999
 
     # Return 0 if null
     def checkHouse(self, player, house):
@@ -336,7 +338,6 @@ class CongklakPlayer3(CongklakPlayer, AI):
     # Gunakan informasi dari papan untuk memilih nomor 
     # lubang mulai
     def main(self, papan):
-        turn = 0
         self.board = papan
         lubang = papan.getLubang(self.nomor)
         
@@ -353,9 +354,10 @@ class CongklakPlayer3(CongklakPlayer, AI):
         
         # Execute AI Decision
         bestDecision = self.start()
-        turn += 1
-        print("TOTAL TURN", turn)
+        self.totalTurn += 1
+        print("TOTAL TURN", self.totalTurn)
         print("INI BEST DECISION", bestDecision)
+        print(self.predictionBoard)
 
         return bestDecision
 
