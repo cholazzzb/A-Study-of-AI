@@ -3,7 +3,7 @@ from AIclass import Piece, Board
 
 ### ----- BUILD THE OBJECT----- ###
 # Pondering Board for heuristic
-ponderBoard = Board(1)
+ponderBoard = Board(1) # CHANGE 1 to model.player (?)
 
 # Piece
 p101 = Piece(101, (0, 0))

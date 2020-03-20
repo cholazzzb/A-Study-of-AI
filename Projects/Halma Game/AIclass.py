@@ -7,7 +7,6 @@ Last Update :
 """
 
 from queue import PriorityQueue
-from halma_model import HalmaModel
 
 # Starting position
 startPositions = {
@@ -57,8 +56,10 @@ class Piece(object):
     def __init__(self, name, position):
         if round(name/100) == 1:
             xt, yt = (9, 9)
+            self.player = 1
         else:
             xt, yt = (0, 0)
+            self.player = 2
         self.name = name  # 101,....
         self.position = position  # (x,y)
         self.legalMove = []  # [[[5, 0], [7,0]], [3,0]]
@@ -74,21 +75,25 @@ class Piece(object):
         self.position = newPosition
         self.range = ()
 
+
     '''
-    VOID => Change the self.greedyMove state
-    1. put every legalMove that piece can do and save it in self.greedyMove PriorityQueue
-    The format is :
-    (performa, move)
-    ((-x performa, -y performa), [ 1/2, (x,y)awal, (x,y)akhir])
-    1 = geser
-    2 = loncat
+    VOID
+    Save all legal move
     '''
-    def checkLegalMove(self):
-        performa = () # xperforma, y performa (in negative)
-        move = [] # tipe 1 / 2 (geser/ loncat), (x,y)awal, (x,y)akhir
-        self.greedyMove.put((performa, move))
-        print('checkLegalMove')
+    def saveLegalMove(self, legalMove):
+        self.legalMove = legalMove
     
+
+    '''
+    VOID
+    Put all move to self.greedyMove one per one
+    '''
+    def saveGreedyMove(self, greedyMove):
+        print('save Greedy Move')
+        for i in range (len(greedyMove)):
+            self.greedyMove.put(greedyMove[i])
+
+       
     '''
     VOID => Change the self.greedyMove state
     1. Get the Best Performa (Most Negative Performa Value) from self.greedyMove PriorityQueue
@@ -96,6 +101,9 @@ class Piece(object):
     '''
     def getBestPerforma(self):
         print('getBestPerforma')
+
+
+
 
 '''
 Board class is used to save state:
@@ -108,9 +116,28 @@ class Board(object):
         self.positions = startPositions
         self.ranges1 = (115, 155) # total ranges (x, y) # Classic game 10x10 2 player 15 pieces, start ranges = ()
         self.ranges2 = (155, 155)
+        self.board = []
 
         # For Greedy Decision
         self.greedyCollector = PriorityQueue()
+
+
+    '''
+    INPUT
+    position (x, y)
+
+    OUTPUT
+    0 = null, there is no piece in the position
+    Other = there is a piece there
+    '''
+    def getPiece(self, position):
+        x, y = position
+        return self.board[y][x]
+
+
+    # Just update the board
+    def updateBoard(self, newBoard):
+        self.board = newBoard
 
     '''
     performa = (deltax, deltay)
@@ -121,13 +148,110 @@ class Board(object):
         self.ranges = (x0+xp, y0+yp)
 
     '''
+    PURE FUNCTION => Check all legal Move (- performa)
+    
+    INPUT : position
+    Position to be checked
+
+    OUTPUT : legalMoves
+    Return every legalMove that piece can do 
+    For Simplification, only some legalMove that have -performa will saved from this pure function
+
+    The return format is :
+    (totalPerforma, performa, move)
+    (totalPerforma, (-x performa, -y performa), [ 1/2, (x,y)awal, (x,y)akhir])
+    1 = geser
+    2 = loncat
+    '''
+    def checkLegalMove(self, position):
+        x, y = position
+        legalMoves = []
+        # For the player1
+        if self.player == 1 :
+        # Check geser Move (if True) & Loncat Move (elif)
+        ## But you must check the range first.
+            if self.board[y+1][x] == 0:
+                totalPerforma = -1
+                performa = (0, -1)
+                move = [1, position, (x, y+1)]
+                legalMoves.push((totalPerforma, performa, move))
+            elif self.board[y+2][x] == 0:
+                totalPerforma = -2
+                performa = (0, -2)
+                move = [2, position, (x, y+2)]
+                legalMoves.push((totalPerforma, performa, move))
+
+            if self.board[y][x+1] == 0:
+                totalPerforma = -1
+                performa = (-1, 0)
+                move = [1, position, (x+1, y)]
+                legalMoves.push((totalPerforma, performa, move))
+            elif self.board[y][x+2] == 0:
+                totalPerforma = -2
+                performa = (-2, 0)
+                move = [2, position, (x+2, y)]
+                legalMoves.push((totalPerforma, performa, move))
+
+            if self.board[y+1][x+1] == 0:
+                totalPerforma = -2
+                performa = (-1, -1)
+                move = [1, position, (x+1, y+1)]
+                legalMoves.push((totalPerforma, performa, move))
+            elif self.board[y+2][x+2] == 0:                             
+                totalPerforma = -4
+                performa = (-2, -2)
+                move = [2, position, (x+2, y+2)]
+                legalMoves.push((totalPerforma, performa, move))
+
+        # For the player2
+        else:
+        # Check geser Move (if True) & Loncat Move (elif)
+        ### BIG WARNING
+        ## But you must check the range first.
+            if self.board[y-1][x] == 0:
+                totalPerforma = -1
+                performa = (0, -1)
+                move = [1, position, (x, y-1)]
+                legalMoves.push((totalPerforma, performa, move))
+            elif self.board[y-2][x] == 0:
+                totalPerforma = -2
+                performa = (0, -2)
+                move = [2, position, (x, y-2)]
+                legalMoves.push((totalPerforma, performa, move))
+
+            if self.board[y][x-1] == 0:
+                totalPerforma = -1
+                performa = (-1, 0)
+                move = [1, position, (x-1, y)]
+                legalMoves.push((totalPerforma, performa, move))
+            elif self.board[y][x-2] == 0:
+                totalPerforma = -2
+                performa = (-2, 0)
+                move = [2, position, (x-2, y)]
+                legalMoves.push((totalPerforma, performa, move))
+
+            if self.board[y-1][x-1] == 0:
+                totalPerforma = -2
+                performa = (-1, -1)
+                move = [1, position, (x-1, y-1)]
+                legalMoves.push((totalPerforma, performa, move))
+            elif self.board[y-2][x-2] == 0:                             
+                totalPerforma = -4
+                performa = (-2, -2)
+                move = [2, position, (x-2, y-2)]
+                legalMoves.push((totalPerforma, performa, move))
+
+        print('checkLegalMove')
+        return legalMoves
+
+    '''
     VOID =>
     1. Collect all best performance from all pieces
     2. Get the best from the best performance
     3. Clear the greedyDecision
     '''
     def greedyDecision(self):
-
+        print('greedyDecision')
 
     def main(self):
         print('main')
