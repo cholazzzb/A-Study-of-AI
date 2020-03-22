@@ -1,9 +1,21 @@
-from AIclass import Piece, Board
+# -*- coding: utf-8 -*-
+"""
+Created on Sun March 20 23:01:48 2020
+Last Update : 
 
+@author: Toro
+"""
+
+# Dependency
+from AIclass import Piece, Board
+from halma_player import HalmaPlayer
+
+# Library
+from copy import deepcopy
 
 ### ----- BUILD THE OBJECT----- ###
 # Pondering Board for heuristic
-ponderBoard = Board(1) # CHANGE 1 to model.player (?)
+ponderBoard = Board()
 
 # Piece
 p101 = Piece(101, (0, 0))
@@ -39,26 +51,69 @@ p214 = Piece(214, (6, 8))
 p215 = Piece(215, (5, 9))
 
 # All Piece Objects in array
-Pieces1 = [p101, p102, p103, p104, p105, p106, p107, p108, p109, p110, p111, p112, p113, p114, p115]
-Pieces2 = [p201, p202, p203, p204, p205, p206, p207, p208, p209, p210, p211, p212, p213, p214, p215]
+def buildPieces(nomor):
+    if nomor == 0:
+        Pieces = [p101, p102, p103, p104, p105, p106, p107,
+                  p108, p109, p110, p111, p112, p113, p114, p115]
+    else:
+        Pieces = [p201, p202, p203, p204, p205, p206, p207,
+                   p208, p209, p210, p211, p212, p213, p214, p215]
+    return Pieces
 
-for i in range(len(Pieces)):
-    print(Pieces[i].name)
+class HalmaPlayer1(object):
 
+    def __init__(self, nama):
+        self.nama = nama
+        self.positions = {}
+        self.ranges = ()  # total ranges (x, y)
+        
+    def setNomor(self, nomor):
+        self.nomor = nomor  # player nomor 1 / 2
+        self.index = nomor-1
+        self.Pieces = buildPieces(self.index)
 
-# class HalmaPlayer1(object):
+    def main(self, Model):
+        '''
+        return greedyDecision
 
-#     def __init__(self, player):
-#         self.player = player # player 1-2
-#         self.positions = {}
-#         self.ranges = ()  # total ranges (x, y)
+        Format : 
+        [Geser/Loncat, (y,x)awal, (y,x)akhir]
 
-#     def main(self):
-#         print('main')
+        Contoh :
+        [2, (0, 1), (2, 3)]
+        Penjelasan :
+        1 = Geser, 2 = Loncat
+        (0, 1) => 0 dari paling kiri papan, 1 dari paling atas papan
+        (2, 3) => 2 dari paling kiri papan, 3 dari paling atas papan
+        '''
+        print('P' + str(self.nomor) + ' main')
+        ponderBoard.updateBoard(Model.getPapan())
 
-
-
-
+        greedyCollector = []
+        for Piece in self.Pieces:
+            Piece.saveGreedyMove(ponderBoard.checkLegalMove(self.nomor, Piece.position))
+            # print(Piece.name)
+            # print('Legal Position', ponderBoard.checkLegalMove(self.nomor, Piece.position))
+            greedyCollector.append(Piece.getBestPerforma())
+        '''
+        greedyDecision is the decision and return of the main function:
+        FORMAT:
+        [1/2, (x,y)start, (x,y)after ] => 1 = geser, 2 = loncat
+        EXAMPLE:
+        [2, (0, 1), (2, 3)]
+        '''
+        greedyDecision = ponderBoard.greedyDecision(greedyCollector)[2]    
+        # Update Piece Position
+        pieceOldPositionX, pieceOldPositionY = greedyDecision[1]
+        pieceNewPositionX, pieceNewPositionY = greedyDecision[2]
+        PiecesIndex = ponderBoard.board[pieceOldPositionY][pieceOldPositionX]  
+        print('Pieces Index', PiecesIndex)
+        while PiecesIndex>100:
+            PiecesIndex -= 100
+        print('Piece Position', self.Pieces[PiecesIndex-1].position)
+        self.Pieces[PiecesIndex-1].position = (pieceNewPositionX, pieceNewPositionY)
+        # print(self.Pieces[self.PiecesIndex-1].position)
+        return greedyDecision
 
 
 '''

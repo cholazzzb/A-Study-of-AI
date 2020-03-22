@@ -11,6 +11,8 @@ Halma Board Game UI
 from halma_model import HalmaModel
 from halma_player import HalmaPlayer
 
+import time
+
 '''
 Try HalmaModel
 '''
@@ -21,14 +23,27 @@ p2 = HalmaPlayer("Player 2")
 
 Model.awal(p1, p2)
 
-print('getBidak (6,7)', Model.getBidak(6, 7))
-print('getGiliran', Model.getGiliran())
-print('getJatahWaktu (1)', Model.getJatahWaktu(1))
-print('getPapan', Model.getPapan())
-print('getJumlahBidak', type(Model.getJumlahBidak))
+# print('getBidak (6,7)', Model.getBidak(6, 7))
+# print('getGiliran', Model.getGiliran())
+# print('getJatahWaktu (1)', Model.getJatahWaktu(1))
+# print('getPapan', Model.getPapan())
+# print('getJumlahBidak', type(Model.getJumlahBidak))
 
-print('getPosisiBidak', Model.getPosisiBidak(103))
+# print('getPosisiBidak', Model.getPosisiBidak(103))
 # Model.bolehGeser(index pemain = 0-1, yawal, xawal, yakhir, xakhir)
+Model.mainGeser(0,4,0,5)
+Model.mainLoncat(0, 2, 0, 4)
+Model.mainLoncat(0, 4, 0, 6)
+# print(Model.getPapan())
+print(Model.getGiliran())
+Model.mainMulai()
+print(Model.ganti(time.process_time()))
+print(Model.getGiliran())
+print(Model.ganti(time.process_time()))
+print(Model.getGiliran())
+print(Model.ganti(time.process_time()))
+print(Model.getGiliran())
+
 
 
 
@@ -58,5 +73,5 @@ def updateUI(moveType, x0, y0, x1, y1):
         print('getPapan', Model.getPapan())
 
 
-updateUI(1, 4, 0, 5, 0)
-updateUI(2, 2, 0, 4, 0)
+# updateUI(1, 4, 0, 5, 0)
+# updateUI(2, 2, 0, 4, 0)
