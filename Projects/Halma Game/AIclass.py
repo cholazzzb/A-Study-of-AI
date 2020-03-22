@@ -5,7 +5,6 @@ Last Update :
 
 @author: Toro
 """
-
 from queue import PriorityQueue
 
 # Starting position

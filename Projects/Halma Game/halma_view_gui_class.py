@@ -42,22 +42,22 @@ startPositions = {
     115: (0, 4),
 
     201: (9, 9),
-    202: (9, 8),
-    203: (8, 9),
-    204: (9, 7),
+    202: (8, 9),
+    203: (9, 8),
+    204: (7, 9),
     205: (8, 8),
 
-    206: (7, 9),
-    207: (9, 6),
-    208: (8, 7),
-    209: (7, 8),
-    210: (6, 9),
+    206: (9, 7),
+    207: (6, 9),
+    208: (7, 8),
+    209: (8, 7),
+    210: (9, 6),
 
-    211: (9, 5),
-    212: (8, 6),
+    211: (5, 9),
+    212: (6, 8),
     213: (7, 7),
-    214: (6, 8),
-    215: (5, 9)
+    214: (8, 6),
+    215: (9, 5)
 }
 
 # Class
@@ -197,6 +197,8 @@ class HalmaViewGUI():
 
         # clock = pygame.time.Clock()
         # Main Function
+        # i = 1
+        # while i < 2:
         while not done:
             pygame.time.delay(100)
 
@@ -226,26 +228,31 @@ class HalmaViewGUI():
 
             # Belum di kontrol ganti gilirannya => Menyebabkan g mau gerak bidaknya
             
-            # if Model.getGiliran() == 0:
-            # Giliran player 1
-            decision = AI1.main(Model)
-            oldY, oldX = decision[1]
-            newY, newX = decision[2]
-            ## Update UI
-            self.positions[Model.getBidak(oldX, oldY)] = (newX, newY)
-            Controller.updateModel(decision, Model)
-            Model.ganti(time.process_time())
-            # else:
+            if Model.getGiliran() == 0:
+                # Giliran player 1
+                decision = AI1.main(Model)
+                oldY, oldX = decision[1]
+                newX, newY = decision[2]
+                ## Update UI
+                # print('before', self.positions[Model.getBidak(oldX, oldY)])
+                # print(oldX, oldY)
+                self.positions[Model.getBidak(oldX, oldY)] = (newX, newY)
+                # print('after', self.positions[Model.getBidak(oldX, oldY)])
+                Controller.updateModel(decision, Model)
+                Model.ganti(time.process_time())
+            else:
                 # Giliran player 2
-            # decision = AI2.main(Model)
-            # oldY, oldX = decision[1]
-            # newY, newX = decision[2]
-            # ## Update UI
-            # self.positions[Model.getBidak(oldX, oldY)] = (newX, newY)
-            # # print('hrsnya g nol', Model.getBidak(oldX, oldY))
-            # Controller.updateModel(decision, Model)
-            # Model.ganti(time.process_time())
+                decision = AI2.main(Model)
+                # print('CHECK THIS', decision)
+                oldY, oldX = decision[1]
+                newX, newY = decision[2]
+                ## Update UI
+                self.positions[Model.getBidak(oldX, oldY)] = (newX, newY)
+                # print('hrsnya g nol', Model.getBidak(oldX, oldY))
+                Controller.updateModel(decision, Model)
+                Model.ganti(time.process_time())
 
+            # print(self.positions)
             # Quit the game
             keys = pygame.key.get_pressed()
 
@@ -262,5 +269,5 @@ class HalmaViewGUI():
             pygame.display.update()
             # clock.tick()
             # pygame.display.flip()
-
+            # i += 1
         pygame.quit()

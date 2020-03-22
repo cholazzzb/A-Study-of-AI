@@ -88,7 +88,7 @@ class HalmaPlayer1(object):
         '''
         print('P' + str(self.nomor) + ' main')
         ponderBoard.updateBoard(Model.getPapan())
-
+        # print(ponderBoard.board)
         greedyCollector = []
         for Piece in self.Pieces:
             Piece.saveGreedyMove(ponderBoard.checkLegalMove(self.nomor, Piece.position))
@@ -107,10 +107,10 @@ class HalmaPlayer1(object):
         pieceOldPositionX, pieceOldPositionY = greedyDecision[1]
         pieceNewPositionX, pieceNewPositionY = greedyDecision[2]
         PiecesIndex = ponderBoard.board[pieceOldPositionY][pieceOldPositionX]  
-        print('Pieces Index', PiecesIndex)
+        # print('Pieces Index', PiecesIndex)
         while PiecesIndex>100:
             PiecesIndex -= 100
-        print('Piece Position', self.Pieces[PiecesIndex-1].position)
+        # print('Piece Position', self.Pieces[PiecesIndex-1].position)
         self.Pieces[PiecesIndex-1].position = (pieceNewPositionX, pieceNewPositionY)
         # print(self.Pieces[self.PiecesIndex-1].position)
         return greedyDecision
