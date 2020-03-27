@@ -69,6 +69,8 @@ class HalmaViewGUI():
     def __init__(self):
         self.positions = {}
         self.thePiece = 0
+        self.gameStatus = False
+        self.giliran = 1
         
         ### ----- INITILIAZE pygame ----- ###
         pygame.init()
@@ -103,7 +105,7 @@ class HalmaViewGUI():
         self.font = pygame.font.Font('freesansbold.ttf', 32) # (font file, size)
         self.fontSmall = pygame.font.Font('freesansbold.ttf', 16)
         ## Create text suface objects, 
-        self.tPlayerTurn = self.font.render('PLAYER' + '1' + 'TURN', True, blue, green)
+        self.tPlayerTurn = self.font.render('PLAYER ' + str(self.giliran) + ' TURN', True, blue, green)
         self.tPlayer1 = self.fontSmall.render('PLAYER1', True, green, blue) #(the text, True, text colour, background color)
         self.tPlayer1Name = self.font.render('AMBIS', True, green, blue)
         self.tPlayer1Points = self.fontSmall.render('PLAYER1POINTS' + '/15', True, green, blue)
@@ -111,7 +113,7 @@ class HalmaViewGUI():
         self.tPlayer2Name = self.font.render('GENIUS', True, green, blue)
         self.tPlayer2Points = self.fontSmall.render('PLAYER2POINTS' + '/15', True, green, blue)
         #-----#
-        self.bStart = self.font.render('START AI GAME', True, green, blue)
+        self.bStart = self.font.render('START', True, green, blue)
         self.bExit = self.font.render('EXIT', True, green, blue)
         ## Create rectangular border for the objects
         self.tPlayerTurnR = self.tPlayerTurn.get_rect()
@@ -205,6 +207,12 @@ class HalmaViewGUI():
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     done = True
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_posX, mouse_posY = event.pos
+                    if mouse_posX > 800 and mouse_posY > 540:
+                        print('clicked')
+                        print(mouse_posX, mouse_posY) 
+                        self.gameStatus = True # True = start
 
             # RENDER THE GAME
             # Clear the screen
@@ -226,31 +234,43 @@ class HalmaViewGUI():
             self.screen.blit(self.bStart, self.bStartR)
             self.screen.blit(self.bExit, self.bExitR)
 
-            # Belum di kontrol ganti gilirannya => Menyebabkan g mau gerak bidaknya
-            
-            if Model.getGiliran() == 0:
-                # Giliran player 1
-                decision = AI1.main(Model)
-                oldY, oldX = decision[1]
-                newX, newY = decision[2]
-                ## Update UI
-                # print('before', self.positions[Model.getBidak(oldX, oldY)])
-                # print(oldX, oldY)
-                self.positions[Model.getBidak(oldX, oldY)] = (newX, newY)
-                # print('after', self.positions[Model.getBidak(oldX, oldY)])
-                Controller.updateModel(decision, Model)
-                Model.ganti(time.process_time())
-            else:
-                # Giliran player 2
-                decision = AI2.main(Model)
-                # print('CHECK THIS', decision)
-                oldY, oldX = decision[1]
-                newX, newY = decision[2]
-                ## Update UI
-                self.positions[Model.getBidak(oldX, oldY)] = (newX, newY)
-                # print('hrsnya g nol', Model.getBidak(oldX, oldY))
-                Controller.updateModel(decision, Model)
-                Model.ganti(time.process_time())
+
+            if self.gameStatus == True:
+                # Belum di kontrol ganti gilirannya => Menyebabkan g mau gerak bidaknya
+                # Idea for Debugging: Copy error board (in the middle of the game) and check the UI response
+                if Model.getGiliran() == 0:
+                    # Giliran player 1
+                    # Update status turn UI
+                    self.giliran = 1 
+                    self.tPlayerTurn = self.font.render('PLAYER ' + str(self.giliran) + ' TURN', True, blue, green)                 
+                    
+                    # Take the move
+                    decision = AI1.main(Model)
+                    oldY, oldX = decision[1]
+                    newX, newY = decision[2]
+                    ## Update UI
+                    # print('before', self.positions[Model.getBidak(oldX, oldY)])
+                    # print(oldX, oldY)
+                    self.positions[Model.getBidak(oldX, oldY)] = (newX, newY)
+                    # print('after', self.positions[Model.getBidak(oldX, oldY)])
+                    Controller.updateModel(decision, Model)
+                    Model.ganti(time.process_time())
+                else:
+                    # Giliran player 2
+                    # Update status turn UI
+                    self.giliran = 2
+                    self.tPlayerTurn = self.font.render('PLAYER ' + str(self.giliran) + ' TURN', True, blue, green)                 
+                    
+                    # Take the move
+                    decision = AI2.main(Model)
+                    # print('CHECK THIS', decision)
+                    oldY, oldX = decision[1]
+                    newX, newY = decision[2]
+                    ## Update UI
+                    self.positions[Model.getBidak(oldX, oldY)] = (newX, newY)
+                    # print('hrsnya g nol', Model.getBidak(oldX, oldY))
+                    Controller.updateModel(decision, Model)
+                    Model.ganti(time.process_time())
 
             # print(self.positions)
             # Quit the game
