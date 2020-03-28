@@ -8,7 +8,6 @@ Last Update : 27 March 2020
 
 # Dependency
 from AIclass import Piece, Board, AIvariables
-from halma_player import HalmaPlayer
 
 # Library
 from copy import deepcopy
@@ -98,9 +97,11 @@ class HalmaPlayer3(object):
     9. self.isAtDestination = False # True if the piece location is in the destinantion region
 
     Piece methods
-    1. 
-    2.
-    3. self.updateAtDestination(self)
+    1. updatePosition() DONE
+    2. analysisLegalMove()
+    3. getBestMove()
+    4. saveLegalMove() DONE
+    5. clearLegalMove() DONE
 
 
     ##### PONDER BOARD #####
@@ -123,24 +124,28 @@ class HalmaPlayer3(object):
     1. self.updatePositions(self, pieceName, newPosition):
     
 
+    # Get possible Geser move 1x
     2. self.getGeserMoves(self, Piece, AIvariables):
     return langkahs
     DONE
 
+    # Get possible Loncat move 1x
     3. self.getLoncatMoves(self, Piece, AIvariables):
     return langkahs
     format:
     [ [[(x1+2, y1)], (x1, y1), type], 
       [[(x1, y1+2)], (x1, y1), type], 
       [[(x1+2, y1+2)], (x1, y1), type] ]
+    DONE
 
+    # return geser move and loncat move more than 1x
     4. self.getLegalMoves(self, Piece, AIvariables):
     return legalMoves
     format:
-    [ [[[(x2, y2)], (x1, y1), type], [[(x2, y2)], (x1, y1), type], [[(x2, y2)], (x1, y1), type] ]
+    [ [[[(x2, y2)], (x1, y1), type], [[(x3, y3)], (x2, y2), type], [[(x4, y4)], (x3, y3), type] ]
       [[[(x2, y2)], (x1, y1), type]],
-      [[[(x2, y2)], (x1, y1), type], [[(x2, y2)], (x1, y1), type]]  ]
-
+      [[[(x2, y2)], (x1, y1), type], [[(x3, y3)], (x2, y2), type]]  ]
+    DONE
 
 
     ##### AI VARIABLES #####
@@ -169,14 +174,19 @@ class HalmaPlayer3(object):
     x2, y2 = posisi akhir
     x1, y1 = posisi awal
     type = 0=>geser, 1=>loncat, 2=> berhenti
-
-
     '''
+
+    nama = "Halmiezzz"
+    deskripsi = "Basic AI"
+    nomor = 1
+    index = 0
+    papan = []
 
     def __init__(self, nama):
         self.nama = nama
         self.positions = {}
         self.ranges = ()  # total ranges (x, y)
+        self.bestMoveSet = []
         
     def setNomor(self, nomor):
         self.nomor = nomor  # player nomor 1 / 2
@@ -184,27 +194,31 @@ class HalmaPlayer3(object):
         self.Pieces = buildPieces(self.index)
 
     def main(self, Model):
-        
-        ## Ponder Board
-        ponderBoard.updateBoard(CustomBoard) # Update ponderBoards
-        # print(ponderBoard.getGeserMove(1, (1,3), AIVar)) # Success
-        # print(ponderBoard.getLoncatMove(1, (0,0), AIVar)) # Success
-        ponderBoard.getLegalMove(p107, AIVar)
-        # test = [12,3,4,5]
-        # new = test.pop(0)
-        # print(test)
-        
-        ## Pieces
-        return [(5,0)], (3,0), 1
+        if len(self.bestMoveSet) == 0:
+            ponderBoard.updateBoard(Model.getPapan()) # Update ponderBoards            
+            # print(ponderBoard.getGeserMove(1, (1,3), AIVar)) # Success
+            # print(ponderBoard.getLoncatMove(1, (3,0), AIVar)) # Success
+            # print(ponderBoard.getLegalMove(p107, AIVar)) # Success
+            bestIndex = 0
+            bestRangeResult = 18
+            for Piece in self.Pieces: # Success
+                Piece.saveLegalsMove(ponderBoard.getLegalMove(Piece, AIVar))
+                Piece.bestMove =  Piece.getBestMove()
+                Piece.analysisLegalMove()
+                x, y = Piece.rangeResult
+                if x+y < bestRangeResult and x != 0 and y != 0:
+                    bestRangeResult = x+y
+                    bestIndex = (Piece.name%100)-1
 
-        
-
-# from halma_model import HalmaModel
-
-# Model = HalmaModel()
-
-# AI = HalmaPlayer3('Halmiezzz')
-# AI.main(Model)
+            self.bestMoveSet = self.Pieces[bestIndex].bestMove
+            xN, yN = self.bestMoveSet[-1][0][0]
+            self.Pieces[bestIndex].updateAfterDecide((xN, yN))
+            theReturn = self.bestMoveSet.pop(0)
+            print()
+            print('HALMIEZZZ DECISION')
+            print(theReturn)
+            print()
+        return theReturn[0], theReturn[1], theReturn[2]
 
 
 '''
@@ -220,13 +234,13 @@ PRIORITY QUEUE TESTER
 # print(test.get())
 # print(test.get())
 
-CustomBoard = [[101,102,104,107,111,  0,  112,  0,  0,  0],
-               [103,105,108,112, 0,  215,  0,  0,  0,  0],
-               [106,109,113,  0,  0,  0,  0,  0,  0,  0],
-               [110,114,  0,  114,  0,  0,  103,  0,  0,  0],
-               [115,  0,  0,  0,  0,  0,  0,  0,  0,  0],
-               [  0,  0,  0,  0,  0,  0,  0,  0,  0,215],
-               [  0,  0,  0,  0,  0,  0,  0,  0,214,210],
-               [  0,  0,  0,  0,  0,  0,  0,213,209,206],
-               [  0,  0,  0,  0,  0,  0,212,208,205,203],
-               [  0,  0,  0,  0,  0,211,207,204,202,201]]
+# CustomBoard = [[101,102,104,107,111,  0,  112,  0,  0,  0],
+#                [103,105,108,112, 0,  215,  0,  0,  0,  0],
+#                [106,109,113,  0,  0,  0,  0,  0,  0,  0],
+#                [110,114,  0,  114,  0,  0,  103,  0,  0,  0],
+#                [115,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+#                [  0,  0,  0,  0,  0,  0,  0,  0,  0,215],
+#                [  0,  0,  0,  0,  0,  0,  0,  0,214,210],
+#                [  0,  0,  0,  0,  0,  0,  0,213,209,206],
+#                [  0,  0,  0,  0,  0,  0,212,208,205,203],
+#                [  0,  0,  0,  0,  0,211,207,204,202,201]]

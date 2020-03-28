@@ -69,27 +69,83 @@ class Piece(object):
         xr, yr = (xt - x0, yt - y0)
         self.range = (xr, yr)  # (x, y)
 
-        # New AI
+        # New AI parameters
         self.legalMoves = []
-        self.rangeResult = []
-        self.deltaAverage = []
-        self.bestMove = 0
-        self.isAtDestination = False
+        self.destination = (xt, yt)
+
+        ## Smaller is better
+        self.rangeResult = (0, 0) # bestMove new position - destination coordinate (0,0) or (9,9)
+        
+        ## Bigger is better
+        self.deltaAverage = 0 # old Average - new Average after bestMove new Position
+        
+        self.isAtDestination = False # Use Boundary to check 
+        self.bestMove = 0 # The Best Position
 
     '''
+    VOID
     update New Position and New Range
     '''
-
-    def update(self, newPosition):
+    def updateAfterDecide(self, newPosition):
         self.position = newPosition
-        self.range = ()
+        
+        x, y = newPosition
+        xt, yt = self.destination
+        if abs(xt+yt-x-y) < 5:
+            self.isAtDestination = True
+
+    '''
+    VOID
+    analysis for LegalMoves and save it to New AI Parameters
+    '''
+    def analysisLegalMove(self):
+        if len(self.bestMove) != 0:
+            # self.rangeResult
+            yn, xn = self.bestMove[-1][0][0]
+            xt, yt = self.destination
+            self.rangeResult = (abs(xt-xn), abs(yt-yn))
+            # self.deltaAverage
+            self.deltaAverage = (xn/15, yn/15)
+            # print('smaller')
+            # print(self.rangeResult)
+            # print('bigger')
+            # print(self.deltaAverage)
+            # print('')
+
+    '''
+    VOID
+    save the BestMove into self.bestMove
+
+    the BestMove can be vary, but this one will choose:
+    '''
+    def getBestMove(self):
+        maxIndex = 0
+        maxLen = 0
+        for i in range(len(self.legalMoves)):
+            if len(self.legalMoves[i]) > maxLen:
+                maxIndex = i
+                maxLen = len(self.legalMoves[i])
+        if len(self.legalMoves) == 0:
+            return []
+        else:
+            return self.legalMoves[maxIndex]
+
+
 
     '''
     VOID
     Save all legal move
     '''
-    def saveLegalMove(self, legalMove):
-        self.legalMove = legalMove
+    def saveLegalsMove(self, legalMove):
+        for newMove in legalMove:
+            self.legalMoves.append(newMove)
+
+    '''
+    VOID 
+    Empty the array self.legalMove
+    '''
+    def clearLegalMove(self):
+        self.legalMoves = []
 
 '''
 Board class is used to save state:
@@ -100,7 +156,7 @@ class Board(object):
     def __init__(self):
         self.positions = startPositions
         # total ranges (x, y) # Classic game 10x10 2 player 15 pieces, start ranges = ()
-        self.ranges1 = (115, 155)
+        self.ranges1 = (155, 155)
         self.ranges2 = (155, 155)
         self.board = []
 
@@ -149,8 +205,9 @@ class Board(object):
                 if self.board[y+yM][x+xM] == 0:
                     langkah = [[(y+yM, x+xM)], (y, x), 0]
                     langkahs.append(langkah)
-        return langkahs
+        return [langkahs]
 
+    # Check move with one loncat
     def getLoncatMove(self, player, lastPosition, AIvariables):
         langkahs = []
         x, y = lastPosition
@@ -170,7 +227,7 @@ class Board(object):
         return langkahs
 
     def getLegalMove(self, Piece, AIvariables):
-        # Check Loncat with greedyDirections
+        # Check Check Multiple Loncat Move
         lastLen = 0
         # First Loop
         langkahs = self.getLoncatMove(Piece.player, Piece.position, AIvariables)                   
@@ -180,35 +237,27 @@ class Board(object):
             copyOflegalMove.append(langkah)
             legalMovesLoncat.append(copyOflegalMove)
         newLen = len(legalMovesLoncat)
-
         # After First Loop
         while lastLen != newLen:
             lastLen = len(legalMovesLoncat)
-            print("LEGAL MOVES", legalMovesLoncat)
             for i in range (lastLen):
                 legalMove = legalMovesLoncat.pop(0)
-                print(legalMove)
                 y, x = legalMove[-1][0][0]
                 langkahs = self.getLoncatMove(Piece.player, (x, y), AIvariables)
                 for langkah in langkahs:
                     legalMove.append(langkah)
-                    legalMovesLoncat.append(legalMove)
+                    forLegalMovesLoncat = deepcopy(legalMove)
+                    legalMovesLoncat.append(forLegalMovesLoncat)
                     legalMove.pop(-1)
+                if len(langkahs) == 0:
+                    forLegalMovesLoncat = deepcopy(legalMove)
+                    legalMovesLoncat.append(forLegalMovesLoncat)
             newLen = len(legalMovesLoncat)
-            print(lastLen, newLen)
 
-        # ## For print First Loop
-        # print(legalMovesLoncat)
-        # # Print
-        # print('LegalMovesLoncat')
-        # for legalMove in legalMovesLoncat:
-        #     print(legalMove)
-        print(legalMovesLoncat)
+        for newMoves in self.getGeserMove(Piece.player, Piece.position, AIvariables):
+            legalMovesLoncat.append(newMoves)
 
         return legalMovesLoncat
-
-    def main(self):
-        print('main')
 
 class AIvariables(object):
     def __init__(self):

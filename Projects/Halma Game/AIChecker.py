@@ -10,5 +10,7 @@ p1.setNomor(1)
 p2.setNomor(2)
 Model.awal(p1, p2)
 
+print(Model.getPapan())
+
 # Change the code for testing below
-p1.main(Model)
+# p1.main(Model)
