@@ -6,6 +6,7 @@ Last Update :
 @author: Toro
 """
 from queue import PriorityQueue
+from copy import deepcopy
 
 # Starting position
 startPositions = {
@@ -51,8 +52,6 @@ Piece class use to save the piece state
 
 Performa is in negative (-). the smaller / more negative is better performance, (-23 is better than -11)
 '''
-
-
 class Piece(object):
     def __init__(self, name, position):
         if round(name/100) == 1:
@@ -70,6 +69,13 @@ class Piece(object):
         xr, yr = (xt - x0, yt - y0)
         self.range = (xr, yr)  # (x, y)
 
+        # New AI
+        self.legalMoves = []
+        self.rangeResult = []
+        self.deltaAverage = []
+        self.bestMove = 0
+        self.isAtDestination = False
+
     '''
     update New Position and New Range
     '''
@@ -82,45 +88,13 @@ class Piece(object):
     VOID
     Save all legal move
     '''
-
     def saveLegalMove(self, legalMove):
         self.legalMove = legalMove
-
-    '''
-    VOID
-    Put all move to self.greedyMove one per one
-    '''
-
-    def saveGreedyMove(self, greedyMove):
-        # print('save Greedy Move')
-        for i in range(len(greedyMove)):
-            self.greedyMove.put(greedyMove[i])
-
-    '''
-    VOID => Change the self.greedyMove state
-    1. Get the Best Performa (Most Negative Performa Value) from self.greedyMove PriorityQueue
-    2. Clear the self.greedyMove state
-    '''
-
-    def getBestPerforma(self):
-        # print('getBestPerforma')
-        theBestPerforma = ()
-        if self.greedyMove.empty:
-            theBestPerforma = (0, 0)
-        if not self.greedyMove.empty():
-            theBestPerforma = self.greedyMove.get()
-        while not self.greedyMove.empty():
-            self.greedyMove.get()
-        # print (theBestPerforma)
-        return theBestPerforma
-
 
 '''
 Board class is used to save state:
 Overall progress of Pieces
 '''
-
-
 class Board(object):
 
     def __init__(self):
@@ -132,6 +106,9 @@ class Board(object):
 
         # For Greedy Decision
         self.greedyCollector = PriorityQueue()
+
+        # New AI
+        self.averageRange = () 
 
     '''
     INPUT
@@ -147,149 +124,96 @@ class Board(object):
         return self.board[y][x]
 
     # Just update the board
-
     def updateBoard(self, newBoard):
         self.board = newBoard
-
-    '''
-    performa = (deltax, deltay)
-    '''
 
     def updateRange(self, performa):
         x0, y0 = self.ranges
         xp, yp = performa
         self.ranges = (x0+xp, y0+yp)
 
-    '''
-    PURE FUNCTION => Check all legal Move (- performa)
-    
-    INPUT : position
-    Position to be checked
-
-    OUTPUT : legalMoves
-    Return every legalMove that piece can do 
-    For Simplification, only some legalMove that have -performa will saved from this pure function
-
-    The return format is :
-    (totalPerforma, performa, move)
-    (totalPerforma, (-x performa, -y performa), [ 1/2, (x,y)awal, (x,y)akhir])
-    1 = geser
-    2 = loncat
-    '''
-
-    def checkLegalMove(self, player, position):
-        # print('checkLegalMove')
-        x, y = position
-        legalMoves = []
-        # print(x, y)
-        # For the player1
+    # Make sure the move won't check the reverse move
+    def getGeserMove(self, player, lastPosition, AIvariables):
+        langkahs = []
+        x, y = lastPosition
+        # Check Geser with greedyDirections
         if player == 1:
-            # Check geser Move (if True) & Loncat Move (elif)
-            if y+1 < 10:
-                if self.board[y+1][x] == 0:
-                    totalPerforma = -1
-                    performa = (0, -1)
-                    move = [1, position, (x, y+1)]
-                    legalMoves.append((totalPerforma, performa, move))
-                elif y+2 < 10:
-                    if self.board[y+2][x] == 0:
-                        totalPerforma = -2
-                        performa = (0, -2)
-                        move = [2, position, (x, y+2)]
-                        legalMoves.append((totalPerforma, performa, move))
-
-            if x+1 < 10:
-                if self.board[y][x+1] == 0:
-                    totalPerforma = -1
-                    performa = (-1, 0)
-                    move = [1, position, (x+1, y)]
-                    legalMoves.append((totalPerforma, performa, move))
-                elif x+2 < 10:
-                    if self.board[y][x+2] == 0:
-                        totalPerforma = -2
-                        performa = (-2, 0)
-                        move = [2, position, (x+2, y)]
-                        legalMoves.append((totalPerforma, performa, move))
-
-            if x+1 < 10 and y+1 < 10:
-                if self.board[y+1][x+1] == 0:
-                    totalPerforma = -2
-                    performa = (-1, -1)
-                    move = [1, position, (x+1, y+1)]
-                    legalMoves.append((totalPerforma, performa, move))
-                elif x+2 < 10 and y+2 < 10:
-                    if self.board[y+2][x+2] == 0:
-                        totalPerforma = -4
-                        performa = (-2, -2)
-                        move = [2, position, (x+2, y+2)]
-                        legalMoves.append((totalPerforma, performa, move))
-
-        # For the player2
+            directions = AIvariables.greedyDirections1
         else:
-            # Check geser Move (if True) & Loncat Move (elif)
-            if y-1 > 0:
-                if self.board[y-1][x] == 0:
-                    totalPerforma = -1
-                    performa = (0, -1)
-                    move = [1, position, (x, y-1)]
-                    legalMoves.append((totalPerforma, performa, move))
-                elif y-2 > 0:
-                    if self.board[y-2][x] == 0:
-                        totalPerforma = -2
-                        performa = (0, -2)
-                        move = [2, position, (x, y-2)]
-                        legalMoves.append((totalPerforma, performa, move))
+            directions = AIvariables.greedyDirections2
+        for direction in directions:
+            xM, yM = direction
+            # Make sure the move is in the board
+            if y+yM < 10 and y+yM > -1 and x+xM < 10 and x+xM > -1:
+                # Make sure the move is legal
+                if self.board[y+yM][x+xM] == 0:
+                    langkah = [[(y+yM, x+xM)], (y, x), 0]
+                    langkahs.append(langkah)
+        return langkahs
 
-            if x-1 > 0:
-                if self.board[y][x-1] == 0:
-                    totalPerforma = -1
-                    performa = (-1, 0)
-                    move = [1, position, (x-1, y)]
-                    legalMoves.append((totalPerforma, performa, move))
-                elif x-2 > 0:
-                    if self.board[y][x-2] == 0:
-                        totalPerforma = -2
-                        performa = (-2, 0)
-                        move = [2, position, (x-2, y)]
-                        legalMoves.append((totalPerforma, performa, move))
+    def getLoncatMove(self, player, lastPosition, AIvariables):
+        langkahs = []
+        x, y = lastPosition
+        # Check Loncat with greedyDirections
+        if player == 1:
+            directions = AIvariables.greedyDirections1
+        else:
+            directions = AIvariables.greedyDirections2
+        for direction in directions:
+            xM, yM = direction
+            # Make sure the move is in the board
+            if y+yM < 10 and y+yM > -1 and x+xM < 10 and x+xM > -1:
+                # Make sure the move is legal
+                if self.board[y+yM][x+xM] != 0 and self.board[y+yM+yM][x+xM+xM] == 0:
+                    langkah = [[(y+yM+yM, x+xM+xM)], (y, x), 1]
+                    langkahs.append(langkah)
+        return langkahs
 
-            if x-1 > 0 and y-1 > 0:
-                if self.board[y-1][x-1] == 0:
-                    totalPerforma = -2
-                    performa = (-1, -1)
-                    move = [1, position, (x-1, y-1)]
-                    legalMoves.append((totalPerforma, performa, move))
-                elif x-2 > 0 and y-2 > 0:
-                    if self.board[y-2][x-2] == 0:
-                        totalPerforma = -4
-                        performa = (-2, -2)
-                        move = [2, position, (x-2, y-2)]
-                        legalMoves.append((totalPerforma, performa, move))
-        return legalMoves
+    def getLegalMove(self, Piece, AIvariables):
+        # Check Loncat with greedyDirections
+        lastLen = 0
+        # First Loop
+        langkahs = self.getLoncatMove(Piece.player, Piece.position, AIvariables)                   
+        legalMovesLoncat = []
+        for langkah in langkahs:
+            copyOflegalMove = []
+            copyOflegalMove.append(langkah)
+            legalMovesLoncat.append(copyOflegalMove)
+        newLen = len(legalMovesLoncat)
 
-    '''
-    PURE FUNCTION =>
-    1. Collect all best performance from all pieces
-    2. Get the best from the best performance
-    3. Clear the greedyDecision
+        # After First Loop
+        while lastLen != newLen:
+            lastLen = len(legalMovesLoncat)
+            print("LEGAL MOVES", legalMovesLoncat)
+            for i in range (lastLen):
+                legalMove = legalMovesLoncat.pop(0)
+                print(legalMove)
+                y, x = legalMove[-1][0][0]
+                langkahs = self.getLoncatMove(Piece.player, (x, y), AIvariables)
+                for langkah in langkahs:
+                    legalMove.append(langkah)
+                    legalMovesLoncat.append(legalMove)
+                    legalMove.pop(-1)
+            newLen = len(legalMovesLoncat)
+            print(lastLen, newLen)
 
-    INPUT
-    decisions : All best decision from the Pieces
-    [(-4, (-2, -2), [2, (0, 2), (2, 4)]), (-2, (-1, -1), [1, (3, 1), (4, 2)]), ...]
+        # ## For print First Loop
+        # print(legalMovesLoncat)
+        # # Print
+        # print('LegalMovesLoncat')
+        # for legalMove in legalMovesLoncat:
+        #     print(legalMove)
+        print(legalMovesLoncat)
 
-    OUTPUT
-    the greedyDecision : One of the biggest performa from all decisions (self.greedyCollector)
-    '''
-    def greedyDecision(self, decisions):
-        # print('greedyDecision')
-        for decision in decisions:
-            # print(decision)
-            self.greedyCollector.put(decision)
-        theGreedyDecision = self.greedyCollector.get()    
-        while not self.greedyCollector.empty():
-            self.greedyCollector.get()
-        # print (theGreedyDecision)
-        return theGreedyDecision
+        return legalMovesLoncat
 
     def main(self):
         print('main')
+
+class AIvariables(object):
+    def __init__(self):
+        self.directions = [(1, 0), (1, -1), (0, -1),
+                           (-1, -1), (-1, 0), (-1, 1),
+                           (0, 1), (1, 1)]
+        self.greedyDirections1 = [(1,0), (0,1), (1,1)]
+        self.greedyDirections2 = [(-1,0), (0,-1), (-1,-1)]
