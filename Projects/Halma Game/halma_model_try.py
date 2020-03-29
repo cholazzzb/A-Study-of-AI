@@ -2,6 +2,7 @@ from halma_model import HalmaModel
 from halma_player import HalmaPlayer
 
 import time
+import random
 
 '''
 Try HalmaModel
@@ -13,8 +14,8 @@ p2 = HalmaPlayer("Player 2")
 
 Model.awal(p1, p2)
 
-print(Model.getBidak(0,1))
-
+print(Model.getPemain(Model.getGiliran()))
+print(random.choice((1, 12)))
 # print('getGiliran', Model.getGiliran())
 # print('getJatahWaktu (1)', Model.getJatahWaktu(1))
 # print('getPapan', Model.getPapan())
