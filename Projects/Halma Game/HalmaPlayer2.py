@@ -174,6 +174,13 @@ class HalmaPlayer3(object):
     x2, y2 = posisi akhir
     x1, y1 = posisi awal
     type = 0=>geser, 1=>loncat, 2=> berhenti
+
+
+    ##### THIS PLAYER3 #####
+    main(Model):
+    return best Move
+    format:
+    [(y2, x2)], (y1, x1), 0/1/2
     '''
 
     nama = "Halmiezzz"
@@ -187,6 +194,7 @@ class HalmaPlayer3(object):
         self.positions = {}
         self.ranges = ()  # total ranges (x, y)
         self.bestMoveSet = []
+        self.theReturn = [] # the Return Value Container
         
     def setNomor(self, nomor):
         self.nomor = nomor  # player nomor 1 / 2
@@ -194,31 +202,51 @@ class HalmaPlayer3(object):
         self.Pieces = buildPieces(self.index)
 
     def main(self, Model):
+        # print('bestMoveSet no switch', self.bestMoveSet)
         if len(self.bestMoveSet) == 0:
             ponderBoard.updateBoard(Model.getPapan()) # Update ponderBoards            
+            # ponderBoard.updateBoard(CustomBoard) # Update ponderBoards            
             # print(ponderBoard.getGeserMove(1, (1,3), AIVar)) # Success
             # print(ponderBoard.getLoncatMove(1, (3,0), AIVar)) # Success
             # print(ponderBoard.getLegalMove(p107, AIVar)) # Success
             bestIndex = 0
-            bestRangeResult = 18
+            # bestRangeResult = 18
+            bestLengthMove = 0
             for Piece in self.Pieces: # Success
                 Piece.saveLegalsMove(ponderBoard.getLegalMove(Piece, AIVar))
                 Piece.bestMove =  Piece.getBestMove()
                 Piece.analysisLegalMove()
-                x, y = Piece.rangeResult
-                if x+y < bestRangeResult and x != 0 and y != 0:
-                    bestRangeResult = x+y
+
+                # Best on new range to destination
+                # x, y = Piece.rangeResult
+                # if x+y < bestRangeResult and x != 0 and y != 0 and len(Piece.bestMove) != 0:
+                #     bestRangeResult = x+y
+                #     bestIndex = (Piece.name%100)-1
+                if len(Piece.bestMove) > bestLengthMove:
                     bestIndex = (Piece.name%100)-1
 
             self.bestMoveSet = self.Pieces[bestIndex].bestMove
-            xN, yN = self.bestMoveSet[-1][0][0]
+            print('self.bestMoveSet', self.bestMoveSet)
+            yN, xN = self.bestMoveSet[-1][0][0]
             self.Pieces[bestIndex].updateAfterDecide((xN, yN))
-            theReturn = self.bestMoveSet.pop(0)
-            print()
-            print('HALMIEZZZ DECISION')
-            print(theReturn)
-            print()
-        return theReturn[0], theReturn[1], theReturn[2]
+            # If x and y in switching
+            # self.Pieces[bestIndex].updateAfterDecide((yN, xN))
+            print('bestMoveSet no switch after', self.bestMoveSet)                        
+            for Piece in self.Pieces: # Success
+                Piece.clearLegalMove()
+        self.theReturn = self.bestMoveSet.pop(0)
+        # Switching x and y
+        # y1, x1 = self.theReturn[0][0]
+        # y2, x2 = self.theReturn[1]
+        # self.theReturn[0] = [(x1, y1)]
+        # self.theReturn[1] = (x2, y2)
+        
+        print()
+        print('HALMIEZZZ DECISION (HALMIEZZZ MAIN)')
+        print("theReturn should len 1", self.theReturn)
+        print()
+
+        return self.theReturn[0], self.theReturn[1], self.theReturn[2]
 
 
 '''
@@ -234,13 +262,13 @@ PRIORITY QUEUE TESTER
 # print(test.get())
 # print(test.get())
 
-# CustomBoard = [[101,102,104,107,111,  0,  112,  0,  0,  0],
-#                [103,105,108,112, 0,  215,  0,  0,  0,  0],
-#                [106,109,113,  0,  0,  0,  0,  0,  0,  0],
-#                [110,114,  0,  114,  0,  0,  103,  0,  0,  0],
-#                [115,  0,  0,  0,  0,  0,  0,  0,  0,  0],
-#                [  0,  0,  0,  0,  0,  0,  0,  0,  0,215],
-#                [  0,  0,  0,  0,  0,  0,  0,  0,214,210],
-#                [  0,  0,  0,  0,  0,  0,  0,213,209,206],
-#                [  0,  0,  0,  0,  0,  0,212,208,205,203],
-#                [  0,  0,  0,  0,  0,211,207,204,202,201]]
+CustomBoard = [[101,102,104,107,111,  0,  110,  0,  0,  0],
+               [103,105,108,112, 0,  110,  0,  0,  0,  0],
+               [106,109,113,  0,  0,  0,  0,  0,  0,  0],
+               [110,114,  0,  110,  0,  0,  103,  0,  0,  0],
+               [115,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+               [  0,  0,  0,  0,  0,  0,  0,  0,  0,215],
+               [  0,  0,  0,  0,  0,  0,  0,  0,214,210],
+               [  0,  0,  0,  0,  0,  0,  0,213,209,206],
+               [  0,  0,  0,  0,  0,  0,212,208,205,203],
+               [  0,  0,  0,  0,  0,211,207,204,202,201]]

@@ -80,13 +80,14 @@ class Piece(object):
         self.deltaAverage = 0 # old Average - new Average after bestMove new Position
         
         self.isAtDestination = False # Use Boundary to check 
-        self.bestMove = 0 # The Best Position
+        self.bestMove = 0 # The Best Move Combination
 
     '''
     VOID
     update New Position and New Range
     '''
     def updateAfterDecide(self, newPosition):
+        print('newPosition', newPosition)
         self.position = newPosition
         
         x, y = newPosition
@@ -99,6 +100,7 @@ class Piece(object):
     analysis for LegalMoves and save it to New AI Parameters
     '''
     def analysisLegalMove(self):
+        print(self.bestMove)
         if len(self.bestMove) != 0:
             # self.rangeResult
             yn, xn = self.bestMove[-1][0][0]
@@ -129,7 +131,6 @@ class Piece(object):
             return []
         else:
             return self.legalMoves[maxIndex]
-
 
 
     '''
@@ -205,7 +206,7 @@ class Board(object):
                 if self.board[y+yM][x+xM] == 0:
                     langkah = [[(y+yM, x+xM)], (y, x), 0]
                     langkahs.append(langkah)
-        return [langkahs]
+        return langkahs
 
     # Check move with one loncat
     def getLoncatMove(self, player, lastPosition, AIvariables):
@@ -219,7 +220,7 @@ class Board(object):
         for direction in directions:
             xM, yM = direction
             # Make sure the move is in the board
-            if y+yM < 10 and y+yM > -1 and x+xM < 10 and x+xM > -1:
+            if y+yM < 10 and y+yM > -1 and x+xM < 10 and x+xM > -1 and y+yM+yM < 10 and y+yM+yM > -1 and x+xM+xM < 10 and x+xM+xM > -1:
                 # Make sure the move is legal
                 if self.board[y+yM][x+xM] != 0 and self.board[y+yM+yM][x+xM+xM] == 0:
                     langkah = [[(y+yM+yM, x+xM+xM)], (y, x), 1]
@@ -255,7 +256,7 @@ class Board(object):
             newLen = len(legalMovesLoncat)
 
         for newMoves in self.getGeserMove(Piece.player, Piece.position, AIvariables):
-            legalMovesLoncat.append(newMoves)
+            legalMovesLoncat.append([newMoves])
 
         return legalMovesLoncat
 
