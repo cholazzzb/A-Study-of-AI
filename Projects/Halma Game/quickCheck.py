@@ -31,3 +31,8 @@ for i in p2:
     # print('')
 
 # Jumlah langkah = 1
+
+x = [[], []]
+print(x)
+x[0].append(3)
+print(x)

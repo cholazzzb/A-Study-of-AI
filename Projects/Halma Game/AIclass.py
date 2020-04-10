@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Create : 20 March 2020 11.23
+Create : 06 April 2020 11.23
 Last Update :
 
 @author: Toro
@@ -81,6 +81,9 @@ class Piece(object):
         
         self.isAtDestination = False # Use Boundary to check 
         self.bestMove = 0 # The Best Move Combination
+
+        ## Version 2
+        self.relativePosition = []
 
     '''
     VOID
@@ -166,6 +169,17 @@ class Board(object):
 
         # New AI
         self.averageRange = () 
+
+        # For Finishing Game
+        targetContainer = []
+        for i in range (15):
+            targetContainer.append(False)
+        self.targetContainer = targetContainer
+
+
+        ### Version 2
+        self.PiecesPositions = []
+        self.PiecesRelativeDistance = []
 
     '''
     INPUT
@@ -259,6 +273,30 @@ class Board(object):
             legalMovesLoncat.append([newMoves])
 
         return legalMovesLoncat
+    
+
+    ### Version 2
+    def getPiecesPositions(self, Pieces):
+        for Piece in Pieces:
+            self.PiecesPositions.append(Piece.position)
+
+    def calculateRelativeDistance(self):
+        relativeDistance = []
+        PieceRelativeDistance = []
+        u = 1
+
+        for i in range (len(self.PiecesPositions)):
+            for residu in range (len(self.PiecesPositions) - u):
+                x1, y1 = self.PiecesPositions[i]
+                x2, y2 = self.PiecesPositions[residu + u]
+                relativeDistance.append((x2-x1, y2-y1))
+            self.PiecesRelativeDistance.append(relativeDistance)
+            relativeDistance = []
+            u += 1
+        
+    def giveRelativeDistance(self, Pieces):
+        print()
+        # In Development
 
 class AIvariables(object):
     def __init__(self):
@@ -267,3 +305,13 @@ class AIvariables(object):
                            (0, 1), (1, 1)]
         self.greedyDirections1 = [(1,0), (0,1), (1,1)]
         self.greedyDirections2 = [(-1,0), (0,-1), (-1,-1)]
+        
+        self.finalDirections1= [[0, 0], [1, 0], [0, 1], [2, 0], [1, 1],
+                            [0, 2], [3, 0], [2, 1], [1, 2], [0, 3], 
+                            [4, 0], [3, 1], [2, 2], [1, 3], [0, 4]]
+        self.finalDirections2 = [[9, 9], [8, 9], [9, 8], [7, 9], [8, 8], 
+                            [9, 8], [6, 9], [7, 8], [8, 7], [9, 6], 
+                            [5, 9], [8, 8], [7, 7], [8, 6], [9, 5]]
+
+        self.Pieces1Name = ['p101', 'p102', 'p103', 'p104', 'p105', 'p106', 'p107', 'p108', 'p109', 'p110', 'p111', 'p112', 'p113', 'p114', 'p115',]
+        self.Pieces2Name = ['p201', 'p202', 'p203', 'p204', 'p205', 'p206', 'p207', 'p208', 'p209', 'p210', 'p211', 'p212', 'p213', 'p214', 'p215',]
