@@ -148,7 +148,6 @@ class HalmaPlayer3(object):
       [[[(x2, y2)], (x1, y1), type], [[(x3, y3)], (x2, y2), type]]  ]
     DONE
 
-
     ##### AI VARIABLES #####
     AIvariables attributes
     1. self.directions = [(1,0), (1,-1), (0,-1),

@@ -72,6 +72,9 @@ class Piece(object):
         # New AI parameters
         self.legalMoves = []
         self.destination = (xt, yt)
+        self.newLegalMoves = []
+        self.rangeAfterMoves = []
+        self.highestRangeMove = ()
 
         ## Smaller is better
         self.rangeResult = (0, 0) # bestMove new position - destination coordinate (0,0) or (9,9)
@@ -90,7 +93,7 @@ class Piece(object):
     update New Position and New Range
     '''
     def updateAfterDecide(self, newPosition):
-        print('newPosition', newPosition)
+        print('NEWPOSITION', newPosition)
         self.position = newPosition
         
         x, y = newPosition
@@ -151,6 +154,74 @@ class Piece(object):
     def clearLegalMove(self):
         self.legalMoves = []
 
+    '''
+    convert old Legal Moves to New Format
+    '''
+    def convertLegalMoves(self):
+        oldMoves = deepcopy(self.legalMoves)
+        newMove = []
+        newMoves = []
+        if len(oldMoves) == 0:
+            newMoves = [None, None, 2]
+        for oldMove in oldMoves:
+            newMove = []
+            if len(oldMove) > 1:
+                moves = []
+                for i in range (len(oldMove)):
+                    moves.append(oldMove[i][0][0]) 
+                newMove.append(moves)
+                newMove.append(oldMove[0][1])
+                newMove.append(1)    
+            else:
+                newMove = oldMove[0]
+            newMoves.append(newMove)
+        return newMoves
+
+    def calculateRangeMoves(self):
+        if self.newLegalMoves[0] == None:
+            self.rangeAfterMoves.append((0,0))
+        else:
+            for legalMove in self.newLegalMoves:
+                xt, yt = legalMove[0][-1]
+                x0, y0 = legalMove[1]
+                self.rangeAfterMoves.append((abs(xt-x0), abs(yt-y0)))
+
+        print('RANGE AFTER MOVES', self.rangeAfterMoves)
+
+    def resetPieceStates(self):
+        # New AI parameters
+        self.legalMoves = []
+        self.destination = (0, 0)
+        self.newLegalMoves = []
+        self.rangeAfterMoves = []
+        self.highestRangeMove = ()
+
+    def switchLegalMoves(self):
+        afterSwitch = []
+        if len(self.newLegalMoves) != 3 and self.newLegalMoves[0] != None:
+            for legalMove in self.newLegalMoves:
+                if legalMove[0] != None:
+                    oldStop = legalMove[0]
+                    oldStart = legalMove[1]
+                    newType = legalMove[2]
+
+                    newStop = []
+                    # Switch stop
+                    for before in oldStop:
+                        x, y = before
+                        new = (y, x)
+                        newStop.append(new)
+
+                    # Switch start
+                    x, y = oldStart
+                    newStart = (y, x)
+                    newReturn = newStop, newStart, newType
+                else:
+                    newReturn = None, None, 2
+                afterSwitch.append(newReturn)
+            self.newLegalMoves = afterSwitch
+
+
 '''
 Board class is used to save state:
 Overall progress of Pieces
@@ -180,6 +251,15 @@ class Board(object):
         ### Version 2
         self.PiecesPositions = []
         self.PiecesRelativeDistance = []
+
+        self.furthestPiece = None
+        self.furthestPosition = None
+        self.nearestPiece = None
+        self.nearestPosition = None
+        self.maxRange = None
+        self.HighestRangeOverall = (0, 0)
+        self.HighestRangeOverallPiece = 0
+        self.HighestRangeOverallIndex = 0
 
     '''
     INPUT
@@ -218,7 +298,7 @@ class Board(object):
             if y+yM < 10 and y+yM > -1 and x+xM < 10 and x+xM > -1:
                 # Make sure the move is legal
                 if self.board[y+yM][x+xM] == 0:
-                    langkah = [[(y+yM, x+xM)], (y, x), 0]
+                    langkah = [[(x+xM, y+yM)], (x, y), 0]
                     langkahs.append(langkah)
         return langkahs
 
@@ -237,7 +317,7 @@ class Board(object):
             if y+yM < 10 and y+yM > -1 and x+xM < 10 and x+xM > -1 and y+yM+yM < 10 and y+yM+yM > -1 and x+xM+xM < 10 and x+xM+xM > -1:
                 # Make sure the move is legal
                 if self.board[y+yM][x+xM] != 0 and self.board[y+yM+yM][x+xM+xM] == 0:
-                    langkah = [[(y+yM+yM, x+xM+xM)], (y, x), 1]
+                    langkah = [[(x+xM+xM, y+yM+yM)], (x, y), 1]
                     langkahs.append(langkah)
         return langkahs
 
@@ -257,7 +337,7 @@ class Board(object):
             lastLen = len(legalMovesLoncat)
             for i in range (lastLen):
                 legalMove = legalMovesLoncat.pop(0)
-                y, x = legalMove[-1][0][0]
+                x, y = legalMove[-1][0][0]
                 langkahs = self.getLoncatMove(Piece.player, (x, y), AIvariables)
                 for langkah in langkahs:
                     legalMove.append(langkah)
@@ -272,8 +352,7 @@ class Board(object):
         for newMoves in self.getGeserMove(Piece.player, Piece.position, AIvariables):
             legalMovesLoncat.append([newMoves])
 
-        return legalMovesLoncat
-    
+        return legalMovesLoncat 
 
     ### Version 2
     def getPiecesPositions(self, Pieces):
@@ -297,6 +376,63 @@ class Board(object):
     def giveRelativeDistance(self, Pieces):
         print()
         # In Development
+
+    def updateNearFarPlus(self, Pieces):
+        nearestRange = 20
+        furthestRange = 0
+        for Piece in Pieces:
+            xt, yt = Piece.destination
+            x0, y0 = Piece.position
+            if abs(xt+yt-x0-y0) < nearestRange:
+                nearestRange = abs(xt-x0) + abs(yt-y0)
+                self.nearestPiece = Piece.name
+                self.nearestPosition = Piece.position
+            if abs(xt+yt-x0-y0) > furthestRange:
+                furthestRange = abs(xt-x0) + abs(yt-y0)
+                self.furthestPiece = Piece.name
+                self.furthestPosition = Piece.position
+        x2, y2 = self.nearestPosition
+        x1, y1 = self.furthestPosition
+        self.maxRange = (abs(x2-x1), abs(y2-y1))
+    
+    def getHighestRangeMove(self, Pieces):
+        xMax = 0
+        yMax = 0
+        thePiece = 0
+        theIndex = 0
+        for Piece in range(len(Pieces)):
+            for index in range(len(Pieces[Piece].rangeAfterMoves)):    
+                xR, yR = Pieces[Piece].rangeAfterMoves[index]
+                if xR+yR > xMax+yMax:
+                    xMax = xR
+                    yMax = yR
+                    thePiece = Piece
+                    theIndex = index
+        self.HighestRangeOverall = Pieces[thePiece].rangeAfterMoves[theIndex]
+        self.HighestRangeOverallPiece = thePiece
+        self.HighestRangeOverallIndex = theIndex  
+        print('HIGHEST RANGE', self.HighestRangeOverall)        
+        print('PIECE', self.HighestRangeOverallPiece)
+        print('INDEX', self.HighestRangeOverallIndex)                    
+        # print("getHighestRangeMove")
+
+    def restartState(self):
+        self.PiecesPositions = []
+        self.PiecesRelativeDistance = []
+
+        self.furthestPiece = None
+        self.furthestPosition = None
+        self.nearestPiece = None
+        self.nearestPosition = None
+        self.maxRange = None
+        self.HighestRangeOverall = (0, 0)
+        self.HighestRangeOverallPiece = 0
+        self.HighestRangeOverallIndex = 0
+
+
+
+    def planA(self):
+        print('plan A')
 
 class AIvariables(object):
     def __init__(self):

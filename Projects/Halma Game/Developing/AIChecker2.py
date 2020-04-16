@@ -1,4 +1,7 @@
 from AIclass import Piece, Board, AIvariables
+from halma_model import HalmaModel
+from halma_player import HalmaPlayer
+from HalmaPlayer2New import HalmaPlayer03
 
 ### ----- BUILD THE OBJECT----- ###
 # Pondering Board for heuristic
@@ -51,10 +54,20 @@ def buildPieces(nomor):
     return Pieces
 
 Pieces = buildPieces(0)
-ponderBoard.getPiecesPositions(Pieces)
+
+## PARTLY DONE
+
+# ponderBoard.getPiecesPositions(Pieces)
 # print(ponderBoard.PiecesPositions)
 
-ponderBoard.calculateRelativeDistance()
+# ponderBoard.calculateRelativeDistance()
 
-for i in range (len(ponderBoard.PiecesRelativeDistance)):
-    print(ponderBoard.PiecesRelativeDistance[i])
+# for i in range (len(ponderBoard.PiecesRelativeDistance)):
+#     print(ponderBoard.PiecesRelativeDistance[i])
+
+# CONVERT LEGAL MOVE FORMAT
+Model = HalmaModel()
+AI = HalmaPlayer03("Genius")
+Model.awal(AI, HalmaPlayer("Cerdas"))
+# print(ponderBoard.board) # DONE
+AI.main(Model)

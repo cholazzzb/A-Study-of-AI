@@ -69,11 +69,6 @@ class HalmaPlayer03(object):
 
 
 
-
-
-
-    
-
     '''
 
     '''
@@ -108,13 +103,33 @@ class HalmaPlayer03(object):
     8. self.bestMove = 0-..... # the index of self.legalMove
     9. self.isAtDestination = False # True if the piece location is in the destinantion region
 
+    10. self.newLegalMoves = []
+    11. self.rangeAfterMoves = []
+    12. self.highestRangeMove = ()
+
+
     Piece methods
     1. updatePosition() DONE
     2. analysisLegalMove()
     3. getBestMove()
     4. saveLegalMove() DONE
     5. clearLegalMove() DONE
+    
+    VERSION 2 methods
+    1. self.convertLegalMoves(self, oldMoves):
+    oldMoves is return from self.getLegalMoves(....)
+    return legalMoves
+    format :
+    [[[(x1,y1),(x2,y2)], (x0,y0) , 1],
+    [[(x1,y1),(x2,y2),(x3,y3),(x4,y4)], (x0,y0) , 1],
+    [None, None , 2],
+    [[(x1,y1)], (x0,y0) , 0]]
 
+    2. self.calculateRangeMoves(self):
+    calculate range between position before and after the piece move
+
+    3. self.restartPieceStates(self):
+    restart all State of a Piece    
 
     ##### PONDER BOARD #####
     Ponder Board attribute
@@ -127,6 +142,11 @@ class HalmaPlayer03(object):
     3. self.ranges2 = (xrange, yrange) # idem for player 2
     4. self.averageRange = (xaverage, yaverage) # contain the average range from all piece of player 1 or 2 in x and y to the destination (0,0) or (9,9)
     5. self.targetContainer = [False, False, .... x15]
+
+
+    ATTRIBUTE FROM AI VERSION 2
+
+
 
     Ponder Board Methods
     -- OLD METHOD
@@ -163,6 +183,20 @@ class HalmaPlayer03(object):
     DONE
 
     5. self.updateTargetContainer(AIVariables):
+    ????? FORGET
+
+    6. self.updateNearFarPlus(self, Pieces):
+        Check the furhest and nearest piece and update the piece name and position to ponderBoard. .....
+        Plus update:
+        self.maxRange = self.furthestPosition - destination
+
+    7. self.getHighestRangeMove(self, Pieces):
+        return the Highest Range Move from all possible move from all owned Piece
+
+    8. self.restartState(self):
+    restart all State variable
+    
+    9. self.planA(self):
 
 
     ##### AI VARIABLES #####
@@ -231,9 +265,11 @@ class HalmaPlayer03(object):
         self.index = nomor-1
         self.Pieces = buildPieces(self.index)
 
-    def updateAndAnalysis(self, Model):
+    ## AI Version 1 Main Function
+    def main1(self, Model):
         ##### This code is for update and Analysis
-        ponderBoard.updateBoard(Model.getPapan())
+        # ponderBoard.updateBoard(Model.getPapan())
+        ponderBoard.updateBoard(CustomBoard)
         bestIndex = 0
         # bestRangeResult = 18
         bestLengthMove = 0
@@ -252,13 +288,12 @@ class HalmaPlayer03(object):
 
         ##### This code is the First AI Decision Code
         self.bestMoveSet = self.Pieces[bestIndex].bestMove
-        print('self.bestMoveSet', self.bestMoveSet)
+        # print('self.bestMoveSet', self.bestMoveSet)
 
         ##### Don't forget to update the Piece Object Position
         yN, xN = self.bestMoveSet[-1][0][0]
         self.Pieces[bestIndex].updateAfterDecide((xN, yN))
 
-    def main(self, Model):
         # print('bestMoveSet no switch', self.bestMoveSet)
         if len(self.bestMoveSet) == 0:
             if self.henti == 0:
@@ -285,20 +320,98 @@ class HalmaPlayer03(object):
 
         self.theReturn = self.bestMoveSet.pop(0)
         # Switching x and y
-        # y1, x1 = self.theReturn[0][0]
-        # y2, x2 = self.theReturn[1]
-        # self.theReturn[0] = [(x1, y1)]
-        # self.theReturn[1] = (x2, y2)
+        y1, x1 = self.theReturn[0][0]
+        y2, x2 = self.theReturn[1]
+        self.theReturn[0] = [(x1, y1)]
+        self.theReturn[1] = (x2, y2)
         
         print()
         print('HALMIEZZZ DECISION (HALMIEZZZ MAIN)')
         print("theReturn should len 1", self.theReturn)
         print()
 
-
         self.henti = 1
         time.sleep(0.5)
         return self.theReturn[0], self.theReturn[1], self.theReturn[2]
+
+    def switchReturn(self, oldReturn):
+        if oldReturn[0] != None:
+            oldStop = oldReturn[0]
+            oldStart = oldReturn[1]
+            newType = oldReturn[2]
+
+            newStop = []
+            # Switch stop
+            for before in oldStop:
+                x, y = before
+                new = (y, x)
+                newStop.append(new)
+
+            # Switch start
+            x, y = oldStart
+            newStart = (y, x)
+            newReturn = newStop, newStart, newType
+        else:
+            newReturn = None, None, 2
+        return newReturn
+
+    def main(self, Model):
+        # self.setNomor(1) # Delete this later
+        # ponderBoard.updateBoard(CustomBoard)
+        ponderBoard.updateBoard(Model.getPapan())
+        ponderBoard.updateNearFarPlus(self.Pieces)
+        i = 1
+        for Piece in self.Pieces:
+            print("----- PIECE " + str(i) + "----- ")
+            Piece.saveLegalsMove(ponderBoard.getLegalMove(Piece, AIVar))
+            print(Piece.legalMoves)
+            Piece.newLegalMoves = Piece.convertLegalMoves()
+            #### HERE THE SWITCHER FOR LEGALMOVES
+            # Piece.switchLegalMoves()
+            print(Piece.newLegalMoves)
+            Piece.calculateRangeMoves()
+            i += 1
+        # print('NEAREST PIECE', ponderBoard.nearestPiece)
+        print('NEAREST POSITION', ponderBoard.nearestPosition)        
+        # print('FURTHEST PIECE', ponderBoard.furthestPiece)
+        print('FURTHEST POSITION', ponderBoard.furthestPosition)
+        print('MAX RANGE', ponderBoard.maxRange)
+        ponderBoard.getHighestRangeMove(self.Pieces)
+        # Check distance between furthest and nearest Piece
+        xF, yF = ponderBoard.furthestPosition
+        xN, yN = ponderBoard.nearestPosition
+        xH, yH = ponderBoard.HighestRangeOverall
+        print('LPM', abs((xF-xN) + (yF-yF)))
+        print('MR', xH+yH)
+        forReturn = self.Pieces[ponderBoard.HighestRangeOverallPiece].newLegalMoves[ponderBoard.HighestRangeOverallIndex] 
+        print('FOR RETURN', forReturn)
+        
+        # Update Piece Position
+        if forReturn != None:
+            if forReturn[0] != None:
+                print('####MovedPieceIndex', ponderBoard.HighestRangeOverallPiece)
+                self.Pieces[ponderBoard.HighestRangeOverallPiece].updateAfterDecide(forReturn[0][-1])
+        # Restart State
+        ponderBoard.restartState()
+        for Piece in self.Pieces:
+            Piece.resetPieceStates()    
+                
+        # print('AFTER SWITCH', finalReturn)   
+        # CHECK PIECE POSITION
+        for Piece in self.Pieces:
+            print("NAME", Piece.name , "POSITION", Piece.position)
+        # SWITCH POSITION FOR RETURN
+        finalReturn = self.switchReturn(forReturn)
+        
+        return finalReturn
+        # if abs((xF-xN) + (yF-yF)) < xH+yH:
+        #     print('Do Greedy Move')
+        #     print(self.Pieces[ponderBoard.HighestRangeOverallPiece].newLegalMoves[ponderBoard.HighestRangeOverallIndex])
+        #     return self.Pieces[ponderBoard.HighestRangeOverallPiece].newLegalMoves[ponderBoard.HighestRangeOverallIndex]
+        # else:
+        #     self.planA()
+        
+
 
 '''
 PRIORITY QUEUE TESTER
