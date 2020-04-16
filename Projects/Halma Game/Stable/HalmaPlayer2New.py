@@ -71,180 +71,6 @@ class HalmaPlayer03(object):
 
     '''
 
-    '''
-    Decision Making
-    Based on Greedy :
-
-    1. Check all pieces move and choose the longest possible move
-    2.
-
-    Architecture :
-    1. Ponder Board (to calculate and pondering from the real board, the ponder board can get attributes about pieces)
-    2. Piece = contain every Piece attributes
-    3. AIvariables = contain variables for AI
-    
-    ##### PIECE #####
-    Piece attributes
-    1. self.player = 1 / 2 # Player 1 or 2
-    2. self.name = Piece name (101,.....)
-    3. self.position #== (x, y)
-    4. self.range = (xr, yr) range self.position to the destination (0,0) or (9,9)
-    
-    # The x and y should be reverse here
-    5. self.legalMoves = [ [[[(x2, y2)], (x1, y1), type], [[(x2, y2)], (x1, y1), type], [[(x2, y2)], (x1, y1), type] ]
-                          [[[(x2, y2)], (x1, y1), type]],
-                          [[[(x2, y2)], (x1, y1), type], [[(x2, y2)], (x1, y1), type]]  ]
-    6. self.rangeResult = [(xr, yr),
-                        (xr, yr),
-                        (xr, yr)] # The range after the best move
-    7. self.deltaAverage = [(-xda, -yda),   
-                            (-xda, -yda),
-                            (-xda, -yda)] # (self.rangeResult - self.range) / 15
-    8. self.bestMove = 0-..... # the index of self.legalMove
-    9. self.isAtDestination = False # True if the piece location is in the destinantion region
-
-    10. self.newLegalMoves = []
-    11. self.rangeAfterMoves = []
-    12. self.highestRangeMove = ()
-
-
-    Piece methods
-    1. updatePosition() DONE
-    2. analysisLegalMove()
-    3. getBestMove()
-    4. saveLegalMove() DONE
-    5. clearLegalMove() DONE
-    
-    VERSION 2 methods
-    1. self.convertLegalMoves(self, oldMoves):
-    oldMoves is return from self.getLegalMoves(....)
-    return legalMoves
-    format :
-    [[[(x1,y1),(x2,y2)], (x0,y0) , 1],
-    [[(x1,y1),(x2,y2),(x3,y3),(x4,y4)], (x0,y0) , 1],
-    [None, None , 2],
-    [[(x1,y1)], (x0,y0) , 0]]
-
-    2. self.calculateRangeMoves(self):
-    calculate range between position before and after the piece move
-
-    3. self.restartPieceStates(self):
-    restart all State of a Piece    
-
-    ##### PONDER BOARD #####
-    Ponder Board attribute
-    1. self.positions = {
-        101: (0,0)
-    }
-    1.1 self.board [] # the board from the model
-    content all piece position
-    2. self.ranges1 = (xrange, yrange) # Contain the range of total all piece player 1
-    3. self.ranges2 = (xrange, yrange) # idem for player 2
-    4. self.averageRange = (xaverage, yaverage) # contain the average range from all piece of player 1 or 2 in x and y to the destination (0,0) or (9,9)
-    5. self.targetContainer = [False, False, .... x15]
-
-
-    ATTRIBUTE FROM AI VERSION 2
-
-
-
-    Ponder Board Methods
-    -- OLD METHOD
-    getPiece DONE
-    updateBoard DONE
-    updateRange DONE
-
-    -- NEW METHOD
-
-    1. self.updatePositions(self, pieceName, newPosition):
-    
-
-    # Get possible Geser move 1x
-    2. self.getGeserMoves(self, Piece, AIvariables):
-    return langkahs
-    DONE
-
-    # Get possible Loncat move 1x
-    3. self.getLoncatMoves(self, Piece, AIvariables):
-    return langkahs
-    format:
-    [ [[(x1+2, y1)], (x1, y1), type], 
-      [[(x1, y1+2)], (x1, y1), type], 
-      [[(x1+2, y1+2)], (x1, y1), type] ]
-    DONE
-
-    # return geser move and loncat move more than 1x
-    4. self.getLegalMoves(self, Piece, AIvariables):
-    return legalMoves
-    format:
-    [ [[[(x2, y2)], (x1, y1), type], [[(x3, y3)], (x2, y2), type], [[(x4, y4)], (x3, y3), type] ]
-      [[[(x2, y2)], (x1, y1), type]],
-      [[[(x2, y2)], (x1, y1), type], [[(x3, y3)], (x2, y2), type]]  ]
-    DONE
-
-    5. self.updateTargetContainer(AIVariables):
-    ????? FORGET
-
-    6. self.updateNearFarPlus(self, Pieces):
-        Check the furhest and nearest piece and update the piece name and position to ponderBoard. .....
-        Plus update:
-        self.maxRange = self.furthestPosition - destination
-
-    7. self.getHighestRangeMove(self, Pieces):
-        return the Highest Range Move from all possible move from all owned Piece
-
-    8. self.restartState(self):
-    restart all State variable
-    
-    9. self.planA(self):
-
-
-    ##### AI VARIABLES #####
-    AIvariables attributes
-    1. self.directions = [(1,0), (1,-1), (0,-1),
-                        (-1,-1), (-1,0), (-1,1),
-                        (0,1), (1,1)]
-
-    2. self.greedyDirections1 = [(1,0), (0,1), (1,1)]
-             
-    3. self.greedyDirections2 = [(-1,0), (0,-1), (-1,-1)]    
-    
-    4. self.finalDirections1 = [[0, 0], [1, 0], [0, 1], [2, 0], [1, 1],
-                            [0, 2], [3, 0], [2, 1], [1, 2], [0, 3], 
-                            [4, 0], [3, 1], [2, 2], [1, 3], [0, 4]]
-    
-    5. self.finalDirections2 = [[9, 9], [8, 9], [9, 8], [7, 9], [8, 8], 
-                            [9, 8], [6, 9], [7, 8], [8, 7], [9, 6], 
-                            [5, 9], [8, 8], [7, 7], [8, 6], [9, 5]]
-
-    AIvariables methods
-    1.
-
-
-    ##### THIS AI #####
-    attributes
-    self.moves = [ [[(x2, y2)], (x1, y1), type],
-                [[(x2, y2)], (x1, y1), type],
-                [[(x2, y2)], (x1, y1), type] ]
-
-
-    methods
-    1.  self.getMove(self):
-    theMove = self.moves.pop(
-    return theMove[0], theMove[1], theMove[2]
-    )
-    return [(x2, y2)], (x1, y1), type
-    x2, y2 = posisi akhir
-    x1, y1 = posisi awal
-    type = 0=>geser, 1=>loncat, 2=> berhenti
-
-
-    ##### THIS PLAYER3 #####
-    main(Model):
-    return best Move
-    format:
-    [(y2, x2)], (y1, x1), 0/1/2
-    '''
 
     nama = "Halmiezzz"
     deskripsi = "Basic AI"
@@ -358,51 +184,66 @@ class HalmaPlayer03(object):
     def main(self, Model):
         # self.setNomor(1) # Delete this later
         # ponderBoard.updateBoard(CustomBoard)
+        forReturn = None
         ponderBoard.updateBoard(Model.getPapan())
         ponderBoard.updateNearFarPlus(self.Pieces)
-        i = 1
-        for Piece in self.Pieces:
-            print("----- PIECE " + str(i) + "----- ")
-            Piece.saveLegalsMove(ponderBoard.getLegalMove(Piece, AIVar))
-            print(Piece.legalMoves)
-            Piece.newLegalMoves = Piece.convertLegalMoves()
-            #### HERE THE SWITCHER FOR LEGALMOVES
-            # Piece.switchLegalMoves()
-            print(Piece.newLegalMoves)
-            Piece.calculateRangeMoves()
-            i += 1
-        # print('NEAREST PIECE', ponderBoard.nearestPiece)
-        print('NEAREST POSITION', ponderBoard.nearestPosition)        
-        # print('FURTHEST PIECE', ponderBoard.furthestPiece)
-        print('FURTHEST POSITION', ponderBoard.furthestPosition)
-        print('MAX RANGE', ponderBoard.maxRange)
-        ponderBoard.getHighestRangeMove(self.Pieces)
-        # Check distance between furthest and nearest Piece
-        xF, yF = ponderBoard.furthestPosition
-        xN, yN = ponderBoard.nearestPosition
-        xH, yH = ponderBoard.HighestRangeOverall
-        print('LPM', abs((xF-xN) + (yF-yF)))
-        print('MR', xH+yH)
-        forReturn = self.Pieces[ponderBoard.HighestRangeOverallPiece].newLegalMoves[ponderBoard.HighestRangeOverallIndex] 
-        print('FOR RETURN', forReturn)
-        
-        # Update Piece Position
-        if forReturn != None:
-            if forReturn[0] != None:
-                print('####MovedPieceIndex', ponderBoard.HighestRangeOverallPiece)
-                self.Pieces[ponderBoard.HighestRangeOverallPiece].updateAfterDecide(forReturn[0][-1])
-        # Restart State
-        ponderBoard.restartState()
-        for Piece in self.Pieces:
-            Piece.resetPieceStates()    
-                
-        # print('AFTER SWITCH', finalReturn)   
-        # CHECK PIECE POSITION
-        for Piece in self.Pieces:
-            print("NAME", Piece.name , "POSITION", Piece.position)
-        # SWITCH POSITION FOR RETURN
-        finalReturn = self.switchReturn(forReturn)
-        
+
+        if ponderBoard.finishMode != True:
+            i = 1
+            for Piece in self.Pieces:
+                print("----- PIECE " + str(i) + "----- ")
+                Piece.saveLegalsMove(ponderBoard.getLegalMove(Piece, AIVar))
+                print(Piece.legalMoves)
+                Piece.newLegalMoves = Piece.convertLegalMoves()
+                #### HERE THE SWITCHER FOR LEGALMOVES
+                # Piece.switchLegalMoves()
+                print(Piece.newLegalMoves)
+                Piece.calculateRangeMoves()
+                i += 1
+
+            # print('NEAREST PIECE', ponderBoard.nearestPiece)
+            print('NEAREST POSITION', ponderBoard.nearestPosition)        
+            # print('FURTHEST PIECE', ponderBoard.furthestPiece)
+            print('FURTHEST POSITION', ponderBoard.furthestPosition)
+            print('MAX RANGE', ponderBoard.maxRange)
+            ponderBoard.getHighestRangeMove(self.Pieces)
+            # Check distance between furthest and nearest Piece
+            xF, yF = ponderBoard.furthestPosition
+            xN, yN = ponderBoard.nearestPosition
+            xH, yH = ponderBoard.HighestRangeOverall
+            print('LPM', abs((xF-xN) + (yF-yF)))
+            print('MR', xH+yH)
+
+            forReturn = self.Pieces[ponderBoard.HighestRangeOverallPiece].newLegalMoves[ponderBoard.HighestRangeOverallIndex] 
+            print('FOR RETURN', forReturn)
+            
+            # Update Piece Position
+            if forReturn != None:
+                if forReturn[0] != None:
+                    print('####MovedPieceIndex', ponderBoard.HighestRangeOverallPiece)
+                    self.Pieces[ponderBoard.HighestRangeOverallPiece].updateAfterDecide(forReturn[0][-1])
+            
+            # Restart State
+            ponderBoard.restartState()
+            for Piece in self.Pieces:
+                Piece.resetPieceStates()    
+                    
+            # print('AFTER SWITCH', finalReturn)   
+            # CHECK PIECE POSITION
+            for Piece in self.Pieces:
+                print("NAME", Piece.name , "POSITION", Piece.position)
+            # SWITCH POSITION FOR RETURN
+            if forReturn != None:
+                if forReturn[0] != None:
+                    finalReturn = self.switchReturn(forReturn)
+                    print('BENER', finalReturn)
+
+
+        # FINISH GAME ??
+        if forReturn == None or ponderBoard.finishMode == True :
+            finalReturn = ponderBoard.finishGame(self.Pieces, ponderBoard, AIVar)
+            ponderBoard.finishMode = True
+
         return finalReturn
         # if abs((xF-xN) + (yF-yF)) < xH+yH:
         #     print('Do Greedy Move')

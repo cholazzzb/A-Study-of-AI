@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Create : 06 April 2020 11.23
+Create : 12 April 2020 16.23
 Last Update :
 
 @author: Toro
@@ -68,9 +68,9 @@ class Piece(object):
         x0, y0 = position
         xr, yr = (xt - x0, yt - y0)
         self.range = (xr, yr)  # (x, y)
+        self.legalMoves = []
 
         # New AI parameters
-        self.legalMoves = []
         self.destination = (xt, yt)
         self.newLegalMoves = []
         self.rangeAfterMoves = []
@@ -95,11 +95,14 @@ class Piece(object):
     def updateAfterDecide(self, newPosition):
         print('NEWPOSITION', newPosition)
         self.position = newPosition
-        
         x, y = newPosition
         xt, yt = self.destination
-        if abs(xt+yt-x-y) < 5:
-            self.isAtDestination = True
+        if self.player == 2:
+            if abs(xt+yt-x-y) < 5:
+                self.isAtDestination = True
+        if self.player == 1:
+            if abs(xt+yt-x-y) > 13:
+                self.isAtDestination = True
 
     '''
     VOID
@@ -261,6 +264,8 @@ class Board(object):
         self.HighestRangeOverallPiece = 0
         self.HighestRangeOverallIndex = 0
 
+        self.finishMode = False
+
     '''
     INPUT
     position (x, y)
@@ -416,6 +421,58 @@ class Board(object):
         print('INDEX', self.HighestRangeOverallIndex)                    
         # print("getHighestRangeMove")
 
+    def getHighestRangeMoveR(self, Pieces):
+        xMax = 0
+        yMax = 0
+        thePiece = 0
+        theIndex = 0
+        maxStrait = 0
+        maxHorz = 0
+        maxVert = 0
+        '''finaldest = []
+        finaldest1 = [[0, 0], [1, 0], [0, 1], [2, 0], [1, 1],
+                      [0, 2], [3, 0], [2, 1], [1, 2], [0, 3], 
+                      [4, 0], [3, 1], [2, 2], [1, 3], [0, 4]]
+        finaldest2 = [[9, 9], [8, 9], [9, 8], [7, 9], [8, 8], 
+                      [9, 8], [6, 9], [7, 8], [8, 7], [9, 6], 
+                      [5, 9], [8, 8], [7, 7], [8, 6], [9, 5]]
+        if Piece.player == 1:
+            finaldest = finaldest1
+        else:
+            finaldest = finaldest2
+        '''    
+        for Piece in range(len(Pieces)):
+            for i in range(len(Pieces[Piece].newLegalMoves)):
+                if Pieces[Piece].newLegalMoves != [None,None,2]:
+                    z = len(Pieces[Piece].newLegalMoves[i][0])-1
+                    
+                    if abs(Pieces[Piece].newLegalMoves[i][0][z][0]-Pieces[Piece].newLegalMoves[i][1][0]) == abs(Pieces[Piece].newLegalMoves[i][0][z][1]-Pieces[Piece].newLegalMoves[i][1][1]) and abs(Pieces[Piece].newLegalMoves[i][0][0][1]-Pieces[Piece].newLegalMoves[i][1][1]) > maxStrait:
+                        
+                        thePiece = Piece
+                        theIndex = i
+                        maxStrait = abs(Pieces[Piece].newLegalMoves[i][0][z][0]-Pieces[Piece].newLegalMoves[i][1][0])
+                
+                    elif abs(Pieces[Piece].newLegalMoves[i][0][z][0]-Pieces[Piece].newLegalMoves[i][1][0]) > maxHorz or abs(Pieces[Piece].newLegalMoves[i][0][z][1]-Pieces[Piece].newLegalMoves[i][1][1]) > maxVert:
+                        
+                        thePiece = Piece
+                        theIndex = i
+                        if abs(Pieces[Piece].newLegalMoves[i][0][z][0]-Pieces[Piece].newLegalMoves[i][1][0]) > abs(Pieces[Piece].newLegalMoves[i][0][z][1]-Pieces[Piece].newLegalMoves[i][1][1]):
+                            maxHorz = abs(Pieces[Piece].newLegalMoves[i][0][0][0]-Pieces[Piece].newLegalMoves[i][1][0])
+                        elif abs(Pieces[Piece].newLegalMoves[i][0][z][0]-Pieces[Piece].newLegalMoves[i][1][0]) < abs(Pieces[Piece].newLegalMoves[i][0][z][1]-Pieces[Piece].newLegalMoves[i][1][1]):
+                            maxVert = abs(Pieces[Piece].newLegalMoves[i][0][z][1]-Pieces[Piece].newLegalMoves[i][1][1])
+                
+                    else:
+                            thePiece = Piece
+                            theIndex = i
+                    
+        self.HighestRangeOverall = Pieces[thePiece].rangeAfterMoves[theIndex]
+        self.HighestRangeOverallPiece = thePiece
+        self.HighestRangeOverallIndex = theIndex  
+        print('HIGHEST RANGE', self.HighestRangeOverall)        
+        print('PIECE', self.HighestRangeOverallPiece)
+        print('INDEX', self.HighestRangeOverallIndex)                    
+        # print("getHighestRangeMove")
+
     def restartState(self):
         self.PiecesPositions = []
         self.PiecesRelativeDistance = []
@@ -428,6 +485,82 @@ class Board(object):
         self.HighestRangeOverall = (0, 0)
         self.HighestRangeOverallPiece = 0
         self.HighestRangeOverallIndex = 0
+
+    def finishGame(self, Pieces, Board, AIVar):
+        diagonalDest = []    
+        diagonalDestIndex = []
+        mustMovePiecesIndex = []    
+        destination = []
+        finishReturn = [(0,0)], (0,0), 1
+        if Pieces[0].player == 1:
+            diagonalDest = AIVar.diagonalDest1
+            finalDirection = AIVar.finalDirections1
+        else:
+            diagonalDest = AIVar.diagonalDest2
+            finalDirection = AIVar.finalDirections2
+        # print('diagonalDest', diagonalDest)
+
+        # Save the piece index must move to destination
+        for index in range(len(Pieces)):
+            if Pieces[index].isAtDestination == False:
+                mustMovePiecesIndex.append(index)
+            print(Pieces[index].name, Pieces[index].isAtDestination)
+        print("MUSTMOVE", mustMovePiecesIndex)
+
+        # Check the destination location for Must Move Piece
+        for desti in finalDirection:
+            x, y = desti
+            if Board.board[y][x] == 0:
+                destination.append(desti)
+        print(destination)
+
+        # Get Direction to Move
+        destinationX, destinationY = destination[0]
+        x, y = Pieces[mustMovePiecesIndex[0]].position
+        directionX, directionY = (destinationX - x,destinationY - y)
+        if directionX > 0:
+            dirX = 1
+        elif directionX < 0:
+            dirX = -1
+        else:
+            dirX = 0
+        if directionY > 0:
+            dirY = 1
+        elif directionY < 0:
+            dirY = -1
+        else:
+            dirY = 0
+        print('Direction X', 'Direction Y', dirX, dirY)
+        print('Position', x, y)
+        print('Destination', destinationX, destinationY)
+
+        # Ubah jadi rekursif ya
+        if Board.board[y+dirY][x+dirX] != 0:
+            if Board.board[y+dirY+dirY][x+dirX+dirX] == 0:
+                finishReturn = [(y+dirY+dirY,x+dirX+dirX)], (y,x), 1
+            else:
+                if Board.board[y+dirY][x] != 0:
+                    if Board.board[y+dirY+dirY][x] == 0:
+                        finishReturn = [(y+dirY+dirY,x)], (y,x), 1
+
+                elif Board.board[y][x+dirX] != 0:
+                    if Board.board[y][x+dirX+dirX] == 0:
+                        finishReturn = [(y,x+dirX+dirX)], (y,x), 1
+
+                elif Board.board[y+dirY][x] == 0:
+                    finishReturn = [(y+dirY,x)], (y,x), 0
+
+                else:
+                    finishReturn = [(y,x+dirX)], (y,x), 0
+        else:
+            finishReturn = [(y+dirY,x+dirX)], (y,x), 0
+
+        print("CHECK THIS", finishReturn)
+
+        ## Update Piece Position
+        yyy, xxx = finishReturn[0][-1]
+        Pieces[mustMovePiecesIndex[0]].updateAfterDecide((xxx, yyy))
+        return finishReturn
 
 
 
@@ -442,12 +575,15 @@ class AIvariables(object):
         self.greedyDirections1 = [(1,0), (0,1), (1,1)]
         self.greedyDirections2 = [(-1,0), (0,-1), (-1,-1)]
         
-        self.finalDirections1= [[0, 0], [1, 0], [0, 1], [2, 0], [1, 1],
-                            [0, 2], [3, 0], [2, 1], [1, 2], [0, 3], 
-                            [4, 0], [3, 1], [2, 2], [1, 3], [0, 4]]
-        self.finalDirections2 = [[9, 9], [8, 9], [9, 8], [7, 9], [8, 8], 
+        self.finalDirections1 = [[9, 9], [8, 9], [9, 8], [7, 9], [8, 8], 
                             [9, 8], [6, 9], [7, 8], [8, 7], [9, 6], 
                             [5, 9], [8, 8], [7, 7], [8, 6], [9, 5]]
+        self.finalDirections2= [[0, 0], [1, 0], [0, 1], [2, 0], [1, 1],
+                            [0, 2], [3, 0], [2, 1], [1, 2], [0, 3], 
+                            [4, 0], [3, 1], [2, 2], [1, 3], [0, 4]]
 
         self.Pieces1Name = ['p101', 'p102', 'p103', 'p104', 'p105', 'p106', 'p107', 'p108', 'p109', 'p110', 'p111', 'p112', 'p113', 'p114', 'p115',]
         self.Pieces2Name = ['p201', 'p202', 'p203', 'p204', 'p205', 'p206', 'p207', 'p208', 'p209', 'p210', 'p211', 'p212', 'p213', 'p214', 'p215',]
+
+        self.diagonalDest1 = [18, 17, 16, 15, 14]
+        self.diagonalDest2 = [0, 1, 2, 3, 4]
