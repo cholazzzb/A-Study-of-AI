@@ -11,7 +11,8 @@ import time
 from halma_model import HalmaModel
 from halma_view_gui import HalmaViewGui
 from halma_player import HalmaPlayer
-
+from HalmaPlayer03A import HalmaPlayer03A
+from HalmaPlayer03B import HalmaPlayer03B
 
 model = HalmaModel()
 layar = HalmaViewGui("HALMA BEREGU")
@@ -30,6 +31,8 @@ def halma4(p1, p2, p3, p4):
         layar.tampilMulai(model)
         g = model.getGiliran()
         p = model.getPemain(g)
+        print('----- GILIRAN ', p.nomor, ' -----')
+        print()
         tujuan, asal, aksi = p.main(model)
         selesai = model.getWaktu()
         
@@ -57,10 +60,10 @@ def halma4(p1, p2, p3, p4):
     pygame.time.sleep(5)
     pygame.quit();
         
-p1=HalmaPlayer("REGU-01")
-p2=HalmaPlayer("REGU-02")
-p3=HalmaPlayer("REGU-03")
-p4=HalmaPlayer("REGU-04")
+p1=HalmaPlayer03A("REGU-01")
+p2=HalmaPlayer03A("REGU-02")
+p3=HalmaPlayer03B("REGU-03")
+p4=HalmaPlayer03B("REGU-04")
 
 p1.setTeman(p3)
 p2.setTeman(p4)

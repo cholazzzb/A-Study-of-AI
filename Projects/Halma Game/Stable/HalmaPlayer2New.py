@@ -1,26 +1,20 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sun March 20 23:01:48 2020
-Last Update : 27 March 2020
+Last Update : 16 April 2020
 
 @author: Toro
 """
 
-# Dependency
 from AIclass import Piece, Board, AIvariables
 
-# Library
 from copy import deepcopy
 import time
 
-### ----- BUILD THE OBJECT----- ###
-# Pondering Board for heuristic
 ponderBoard = Board()
-
-# AI variable
 AIVar = AIvariables()
 
-# Piece
+
 p101 = Piece(101, (0, 0))
 p102 = Piece(102, (1, 0))
 p103 = Piece(103, (0, 1))
@@ -254,18 +248,6 @@ class HalmaPlayer03(object):
         
 
 
-'''
-PRIORITY QUEUE TESTER
-'''
-# test = PriorityQueue()
-# test.put((-1000, [110, "test"]))
-# test.put((10, [10, "tessdfsdt"]))
-# test.put((30, [10, "tessdfsdt"]))
-# test.put((110, [10, "tessdfsdt"]))
-# print(test.get())
-# print(test.get())
-# print(test.get())
-# print(test.get())
 
 CustomBoard = [[101,102,104,107,111,  0,  110,  0,  0,  0],
                [103,105,108,112, 0,  110,  0,  0,  0,  0],
