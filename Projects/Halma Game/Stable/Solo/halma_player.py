@@ -14,7 +14,6 @@ class HalmaPlayer:
     nomor = 1    
     index = 0
     papan = []
-    teman = None
     
     def __init__(self, nama):
         self.nama = nama
@@ -22,9 +21,6 @@ class HalmaPlayer:
     def setNomor(self, nomor):
         self.nomor = nomor
         self.index = nomor-1
-        
-    def setTeman(self, p1):
-        self.teman = p1        
 
     # mengembalikan semua kemungkikan main (geser / loncat) bidak di (x1, y1)
     def bisaMain(self, model, papan, x1, y1):
@@ -66,7 +62,7 @@ class HalmaPlayer:
                 return [l[0]], b, model.A_LONCAT
             if g != [] :
                 return g, b, model.A_GESER
-        return None, None, model.A_BERHENTI
+        return None, None, model.A_HENTI
     
             
         
