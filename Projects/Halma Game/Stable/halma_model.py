@@ -79,6 +79,9 @@ class HalmaModel:
     def getPemain(self, ip):
         return self.__pemain[ip]
 
+    def getTeman(self, index):
+        return (index+2)%4
+
     # mengembalikan giliran (berupa index pemain)
     def getGiliran(self):
         return self.__giliran

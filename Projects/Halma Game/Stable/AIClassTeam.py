@@ -16,20 +16,15 @@ startPositions = {
     401: (9, 0),    402: (9, 1),    403: (8, 0),    404: (9, 2),    405: (8, 1),    406: (7, 0),    407: (9, 3),    408: (8, 2),    409: (7, 1),    410: (6, 0),    411: (8, 3),    412: (7, 2),    413: (6, 1)
 }
 
-
 class Piece(object):
     def __init__(self, name, position):
         if round(name/100) == 1:
-            # xt, yt = (9, 9)
             self.player = 1
         if round(name/100) == 2:
-            # xt, yt = (9, 0)
             self.player = 2
         if round(name/100) == 3:
-            # xt, yt = (0, 0)
             self.player = 3
         if round(name/100) == 4:
-            # xt, yt = (0, 9)
             self.player = 4
 
         self.name = name
@@ -37,25 +32,38 @@ class Piece(object):
 
         # NOTES : The variables are pair ex: legalMoves[x] has rangeLegalMoves[x], lenLegalMoves[x], etc
         self.legalMoves = []
-        # range = (yAfterMove - ybeforeMove, xAfterMove - xbeforeMove)
-        self.rangeLegalMoves = []
+        # delta = (yAfterMove - ybeforeMove, xAfterMove - xbeforeMove)
+        self.deltaLegalMoves = []
         self.lenLegalMoves = []
 
         self.pieceDirections = []
+        self.isAtDestination = False
 
     def setPieceDirections(self, pieceDirections):
         self.pieceDirections = pieceDirections
 
     def clearLegalMoves(self):
         self.legalMoves = []
-        self.rangeLegalMoves = []
+        self.deltaLegalMoves = []
         self.lenLegalMoves = []
 
     def updatePosition(self, decision):
-        self.position = decision[0][-1]
+        if decision[0] != None:
+            self.position = decision[0][-1]
         print('UPDATE POSITION')
         print('PIECE ', self.name)
         print('NEW POSITION ', self.position)
+
+    def checkIsAtDestination(self):
+        y, x = self.rangeWithDestination
+        if y+x < 4:
+            self.isAtDestination = True
+        
+    def checkThreeDestinationPoints(self, AIvariables):    
+        destinationThreePoints = AIvariables.threeDestinationPoints[self.player-1]
+        for destinationThreePoint in destinationThreePoints:
+            if destinationThreePoint[0] == self.position[0] and destinationThreePoint[1] == self.position[1]:
+                self.isAtDestination = True
 
     def calculateLenLegalMoves(self):
         print(self.legalMoves)
@@ -63,6 +71,26 @@ class Piece(object):
             for legalMove in self.legalMoves:
                 self.lenLegalMoves.append(len(legalMove[0]))
         print('LEN LEGAL MOVES', self.lenLegalMoves)
+            
+    def calculateDeltaLegalMoves(self, destinationPoints):
+        if self.legalMoves[0] != None:
+            yDest, xDest = destinationPoints[self.player-1]
+            for legalMove in self.legalMoves:
+                yNew, xNew = legalMove[0][-1]
+                yOld, xOld = legalMove[1]
+                rangeNew = (abs(yNew-yDest), abs(xNew-xDest))
+                rangeOld = (abs(yOld-yDest), abs(xOld-xDest))
+                yDelta, xDelta = (rangeOld[0]-rangeNew[0], rangeOld[1]-rangeNew[1])
+                self.deltaLegalMoves.append((yDelta, xDelta))
+        print('DELTA LEGAL MOVES', self.deltaLegalMoves)
+
+    def calculateRangeWithDestination(self, destinationPoints):
+        y, x = destinationPoints[self.player-1]
+        ypos, xpos = self.position
+        self.rangeWithDestination = (abs(y-ypos), abs(x-xpos))
+        print("RANGE WITH DESTINATION", self.rangeWithDestination)
+
+
 
 class PonderBoard(object):
     def __init__(self):
@@ -74,6 +102,10 @@ class PonderBoard(object):
         self.FPName = 101
         self.NPName = 113  # NP -> Nearest Piece from idem
         self.rangeBetweenFPNP = (2, 2)
+        
+        # Furthest / Nearest from Destination Point
+        self.furthestPiece = 0
+        self.nearestPiece = 0
 
     def updateRealBoard(self, newBoard):
         self.realBoard = newBoard
@@ -91,6 +123,16 @@ class PonderBoard(object):
             return False
         else:
             return True
+
+    def checkPieceGeserMoves(self, Piece):
+        y0, x0 = Piece.position
+        for pieceDirection in Piece.pieceDirections:
+            y, x = pieceDirection
+            if self.isSquareInBoard((y0+y, x0+x)):
+                if self.isPieceInTheSquare((y0+y, x0+x)) == False:
+                    Piece.legalMoves.append([[(y0+y, x0+x)], (y0, x0), 0])
+        if len(Piece.legalMoves) == 0:
+            Piece.legalMoves = [None, None, 2]
 
     def checkPieceJumpMoves(self, newPiecePosition, pieceDirections):
         y0, x0 = newPiecePosition
@@ -114,42 +156,42 @@ class PonderBoard(object):
             isCheckAgain = True
         else:
             isCheckAgain = False
-        print('IS CHECK AGAIN', isCheckAgain)
+        # print('IS CHECK AGAIN', isCheckAgain)
         while isCheckAgain:
             for jumpMove in jumpMoves:
                 oldMove = jumpMoves.pop(0)
                 analyzeMove = deepcopy(oldMove[-1])
-                print('OLDMOVE', oldMove)
-                print('ANALYZEMOVE', analyzeMove)
-                print('JUMPMOVES', jumpMoves)
+                # print('OLDMOVE', oldMove)
+                # print('ANALYZEMOVE', analyzeMove)
+                # print('JUMPMOVES', jumpMoves)
                 analyzeResults = self.checkPieceJumpMoves(analyzeMove, Piece.pieceDirections)
-                print('ANALYZE RESULTS BEFORE', analyzeResults)
+                # print('ANALYZE RESULTS BEFORE', analyzeResults)
                 isCheckAgain = False
                 if len(analyzeResults) != 0:
                     for analyzeResult in analyzeResults:
                         if len(oldMove) > 1:
                             positionBeforeAnalyzeMove = oldMove[-2]
                             yBefore, xBefore = positionBeforeAnalyzeMove
-                            print('POSITION BEFORE ANALYZE MOVE', positionBeforeAnalyzeMove)
+                            # print('POSITION BEFORE ANALYZE MOVE', positionBeforeAnalyzeMove)
                             analyzeResult = analyzeResult[0]
-                            print('ANALYZE RESULTS AFTER', analyzeResult)
+                            # print('ANALYZE RESULTS AFTER', analyzeResult)
                             yAfter, xAfter = analyzeResult
                             if yAfter != yBefore or xAfter != xBefore:
                                 newMove = deepcopy(oldMove)
                                 newMove.append(analyzeResult)
-                                print('NEWMOVE', newMove)                        
+                                # print('NEWMOVE', newMove)                        
                                 jumpMoves.append(newMove)
                                 isCheckAgain = True
                         else:
                             newMove = deepcopy(oldMove)
                             newMove.append(analyzeResult[0])
-                            print('NEWMOVE', newMove)                        
+                            # print('NEWMOVE', newMove)                        
                             jumpMoves.append(newMove)
                             isCheckAgain = True
                 else:
                     jumpMoves.append(oldMove)
-            print('IS CHECK AGAIN', isCheckAgain)
-            print('JUMP MOVES', jumpMoves)
+            # print('IS CHECK AGAIN', isCheckAgain)
+            # print('JUMP MOVES', jumpMoves)
         for jumpMove in jumpMoves:
             Piece.legalMoves.append([jumpMove, Piece.position, 1])
 
@@ -177,6 +219,86 @@ class PonderBoard(object):
                     self.longestLenMovePieceIndex = thePieceIndex
         self.longestLenMove = Pieces[thePieceIndex].legalMoves[lenIndex]
                     
+    def getBiggestDeltaMove(self, Pieces):
+        biggestDelta = 0
+        thePieceIndex = 0
+        deltaIndex = 0
+        for pieceIndex in range(len(Pieces)):
+            for pieceDeltaIndex in range(len(Pieces[pieceIndex].deltaLegalMoves)):
+                y, x = Pieces[pieceIndex].deltaLegalMoves[pieceDeltaIndex]
+                if y+x > biggestDelta:
+                    biggestDelta = y+x
+                    thePieceIndex = pieceIndex
+                    deltaIndex = pieceDeltaIndex
+                    self.biggestDeltaMovePieceIndex = thePieceIndex
+        self.biggestDeltaMove = Pieces[thePieceIndex].legalMoves[deltaIndex]
+        self.biggestDelta = biggestDelta
+
+    # ANALYZE FUNCTION
+    def getFurthestNearestPiece(self, Pieces):
+        nearest = 18
+        furthest = 0
+        for pieceIndex in range(len(Pieces)):
+            y, x = Pieces[pieceIndex].rangeWithDestination
+            if abs(y+x) > furthest:
+                furthest = abs(y+x)
+                self.furthestPiece = Pieces[pieceIndex].name
+            if abs(y+x) < nearest:
+                nearest = abs(y+x)
+                self.nearestPiece = Pieces[pieceIndex].name
+        # print("NEAREST PIECE", self.nearestPiece)
+        # print("FURTHEST PIECE", self.furthestPiece)
+        
+    def countPiecesAtDestination(self, Pieces):
+        self.sumPiecesAtDestination = 0
+        for Piece in Pieces:
+            if Piece.isAtDestination:
+                self.sumPiecesAtDestination += 1
+
+        print('SUM PIECES AT DESTINATION = ', self.sumPiecesAtDestination)
+
+    ## SPECIAL FUNCTION FOR ENDMODE
+    def getNearestDestination(self, Piece, Model, destinations):
+        nearest = 18
+        nearestDestination = (10, 10)
+        for destination in destinations:
+            print('APA ISI INI ', destination, Model.getBidak(destination[0], destination[1]))
+            if Model.getBidak(destination[0], destination[1]) == 0 or round(Model.getBidak(destination[0], destination[1])/100) != Piece.player :
+                if abs(Piece.position[0]-destination[0])+abs(Piece.position[1]-destination[0]) < nearest:
+                    nearest = abs(Piece.position[0]-destination[0])+abs(Piece.position[1]-destination[0])
+                    nearestDestination = destination
+        print("SELECTED NEAREST DESTINATION", nearestDestination)
+        print("PIECE POSITION", Piece.position)
+        return nearestDestination
+
+
+    def getMoveFromDestination(self, Piece, destination, AIvariables):
+        directions = AIvariables.playersDirections[Piece.player-1]
+        yPos, xPos = Piece.position
+        yDes, xDes = AIvariables.destinationPoints[Piece.player-1]
+        print()
+        for direction in directions:
+            if self.isSquareInBoard((yPos+direction[0], xPos+direction[1])):
+                if self.isPieceInTheSquare((yPos+direction[0], xPos+direction[1])):
+                    if self.isSquareInBoard((yPos+direction[0]*2, xPos+direction[1]*2)):
+                        if self.isPieceInTheSquare((yPos+direction[0]*2, xPos+direction[1]*2)) == False and abs(yDes-(yPos+direction[0]*2))+ abs(xDes-(xPos+direction[1]*2)) < 4:
+                            return [(yPos+direction[0]*2, xPos+direction[1]*2)], Piece.position, 1
+                else:    
+                    return [(yPos+direction[0], xPos+direction[1])], Piece.position, 0     
+        return None, None, 2
+
+    def moveDestinationPiece(self, nomor, nearestDestination, AIvariables):
+        directions = AIvariables.playersDirections[((nomor+2)%4)-1]
+        # print("THIS IS SAI ", nearestDestination[0]+direction[0]+direction[0], nearestDestination[1]+direction[1])
+        for direction in directions:
+            if self.isSquareInBoard((nearestDestination[0]+direction[0]+direction[0], nearestDestination[1]+direction[1]+direction[1])):
+                if self.realBoard[nearestDestination[0]+direction[0]+direction[0]][nearestDestination[1]+direction[1]+direction[1]]//100 == nomor and self.realBoard[nearestDestination[0]+direction[0]][nearestDestination[1]+direction[1]] != 0:
+                    return [nearestDestination], (nearestDestination[0]+direction[0]+direction[0], nearestDestination[1]+direction[1]+direction[1]), 1
+            if self.isSquareInBoard((nearestDestination[0]+direction[0], nearestDestination[1]+direction[1])):
+                if self.realBoard[nearestDestination[0]+direction[0]][nearestDestination[1]+direction[1]]//100 == nomor:
+                    return [nearestDestination], (nearestDestination[0]+direction[0], nearestDestination[1]+direction[1]), 0
+        return None, None, 2
+
 class AIvariables(object):
 
     def __init__(self):
@@ -195,10 +317,18 @@ class AIvariables(object):
         # FORMAT (vertical or y, horizontal or x) 1 = down or right, -1 = up or left
         self.playersDirections = [
             [(1, 1), (1, 0), (0, 1), (1, -1), (-1, 1)],
-            [(1, -1), (1, 0), (0, -1), (1, 1), (1, -1)],
+            [(1, -1), (1, 0), (0, -1), (1, 1), (-1, -1)],
             [(-1, -1), (-1, 0), (0, -1), (-1, 1), (1, -1)],
             [(-1, 1), (-1, 0), (0, 1), (-1, -1), (1, 1)]
         ]
+
+        # TESTING
+        # self.playersDirections = [
+        #     [(-1,-1), (0,-1), (1,-1), (-1,0), (1,0),(-1,1), (0,1), (1,1)],
+        #     [(-1,-1), (0,-1), (1,-1), (-1,0), (1,0),(-1,1), (0,1), (1,1)],
+        #     [(-1,-1), (0,-1), (1,-1), (-1,0), (1,0),(-1,1), (0,1), (1,1)],
+        #     [(-1,-1), (0,-1), (1,-1), (-1,0), (1,0),(-1,1), (0,1), (1,1)]
+        # ]
 
         self.finalDestinations1 = [[9, 9], [8, 9], [9, 8], [7, 9], [8, 8],
                                    [9, 8], [6, 9], [7, 8], [8, 7], [9, 6],
@@ -210,3 +340,12 @@ class AIvariables(object):
         # diagonal = y + x
         self.diagonalDest1 = [18, 17, 16, 15, 14]
         self.diagonalDest2 = [0, 1, 2, 3, 4]
+
+        self.destinationPoints = [(9,9), (9,0), (0,0), (0,9)]
+
+        self.threeDestinationPoints = [
+            [(8, 6), (7, 7), (6, 8)],
+            [(8, 3), (7, 2), (6, 1)],
+            [(1, 3), (2, 2), (3, 1)],
+            [(1, 6), (2, 7), (3, 8)]
+        ]

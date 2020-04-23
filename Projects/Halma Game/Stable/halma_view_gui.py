@@ -69,12 +69,15 @@ class HalmaViewGui(HalmaView):
         self.fontSmall = pygame.font.Font('freesansbold.ttf', 16)
         ## Create text suface objects, 
         self.tPlayerTurn = self.font.render('PLAYER ' + str(self.giliran) + ' TURN', True, blue, green)
-        self.tPlayer1 = self.fontSmall.render('PLAYER1', True, green, blue) #(the text, True, text colour, background color)
-        self.tPlayer1Name = self.font.render('AMBIS', True, green, blue)
-        self.tPlayer1Points = self.fontSmall.render('PLAYER1POINTS' + '/15', True, green, blue)
-        self.tPlayer2 = self.fontSmall.render('PLAYER2', True, green, blue)
-        self.tPlayer2Name = self.font.render('GENIUS', True, green, blue)
-        self.tPlayer2Points = self.fontSmall.render('PLAYER2POINTS' + '/15', True, green, blue)
+        self.tPlayer1 = self.fontSmall.render('PLAYER1', True, green, dark_grey) #(the text, True, text colour, background color)
+        self.tPlayer1Name = self.font.render('MERAH', True, red, dark_grey)
+        self.tPlayer2 = self.fontSmall.render('PLAYER2', True, green, dark_grey)
+        self.tPlayer2Name = self.font.render('BIRU', True, blue, dark_grey)
+        self.tPlayer3 = self.fontSmall.render('PLAYER3', True, green, dark_grey) #(the text, True, text colour, background color)
+        self.tPlayer3Name = self.font.render('HIJAU', True, green, dark_grey)
+        self.tPlayer4 = self.fontSmall.render('PLAYER4', True, green, dark_grey)
+        self.tPlayer4Name = self.font.render('KUNING', True, yellow, dark_grey)
+        
         #-----#
         self.bStart = self.font.render('START', True, green, blue)
         self.bExit = self.font.render('EXIT', True, green, blue)
@@ -82,10 +85,13 @@ class HalmaViewGui(HalmaView):
         self.tPlayerTurnR = self.tPlayerTurn.get_rect()
         self.tPlayer1R = self.tPlayer1.get_rect() 
         self.tPlayer1NameR = self.tPlayer1Name.get_rect() 
-        self.tPlayer1PointsR = self.tPlayer1Points.get_rect() 
         self.tPlayer2R = self.tPlayer2.get_rect() 
         self.tPlayer2NameR = self.tPlayer2Name.get_rect() 
-        self.tPlayer2PointsR = self.tPlayer2Points.get_rect() 
+        self.tPlayer3R = self.tPlayer3.get_rect() 
+        self.tPlayer3NameR = self.tPlayer3Name.get_rect() 
+        self.tPlayer4R = self.tPlayer4.get_rect() 
+        self.tPlayer4NameR = self.tPlayer4Name.get_rect() 
+        
         #-----#
         self.bStartR = self.bStart.get_rect()
         self.bExitR = self.bExit.get_rect()
@@ -93,10 +99,13 @@ class HalmaViewGui(HalmaView):
         self.tPlayerTurnR.center = (640, 30)
         self.tPlayer1R = (800, 80) 
         self.tPlayer1NameR.center = (1000, 112 + 16) 
-        self.tPlayer1PointsR = (800, 144) 
-        self.tPlayer2R = (800, 176) 
-        self.tPlayer2NameR.center = (1000, 208 + 16) 
-        self.tPlayer2PointsR = (800, 240) 
+        self.tPlayer2R = (800, 144) 
+        self.tPlayer2NameR.center = (1000, 176 + 16) 
+        self.tPlayer3R = (800, 208) 
+        self.tPlayer3NameR.center = (1000, 240 + 16) 
+        self.tPlayer4R = (800, 272) 
+        self.tPlayer4NameR.center = (1000, 304 + 16) 
+        
         #-----#
         self.bStartR = (800, 540)
         self.bExitR = (1000, 540)
@@ -130,10 +139,12 @@ class HalmaViewGui(HalmaView):
         self.screen.blit(self.tPlayerTurn, self.tPlayerTurnR)
         self.screen.blit(self.tPlayer1, self.tPlayer1R)
         self.screen.blit(self.tPlayer1Name, self.tPlayer1NameR)
-        self.screen.blit(self.tPlayer1Points, self.tPlayer1PointsR)
         self.screen.blit(self.tPlayer2, self.tPlayer2R)
         self.screen.blit(self.tPlayer2Name, self.tPlayer2NameR)
-        self.screen.blit(self.tPlayer2Points, self.tPlayer2PointsR)
+        self.screen.blit(self.tPlayer3, self.tPlayer3R)
+        self.screen.blit(self.tPlayer3Name, self.tPlayer3NameR)
+        self.screen.blit(self.tPlayer4, self.tPlayer4R)
+        self.screen.blit(self.tPlayer4Name, self.tPlayer4NameR)
         self.screen.blit(self.bStart, self.bStartR)
         self.screen.blit(self.bExit, self.bExitR)
         pygame.display.update()
@@ -164,6 +175,9 @@ class HalmaViewGui(HalmaView):
     # tampilkan pergantian pemain        
     def tampilGanti(self, model):
         super().tampilGanti(model)
+        self.giliran = model.getGiliran()
+        self.screen.blit(self.tPlayerTurn, self.tPlayerTurnR)
+        pygame.display.update()
 
     # tampilkan game selesai
     def tampilAkhir(self, model, status):
