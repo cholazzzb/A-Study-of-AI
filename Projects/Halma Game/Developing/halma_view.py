@@ -20,14 +20,15 @@ class HalmaView:
 
     # mulai main 2 pemain
     def tampilAwal(self, model):
-        print("Ukuran   :", model.getUkuran())
-        print("Bidak    :", model.getJumlahBidak())
+        print(f"Ukuran   : {model.getUkuran()}")
+        print(f"Ukuran   : {model.getUkuran()}")
+        print(f"Bidak    : {model.getJumlahBidak()}")
         for i in range(model.getJumlahPemain()):
-            print("Pemain ",i," : ", model.getPemain(i).nama)
+            print(f"Pemain  {i}  : {model.getPemain(i).nama}")
         print()
         print("Bidak \tAksi \tDari \tKe")
 
-    def tampilMulai(self, model):
+    def tampilMulai(self, model, statisticData):
         # nothing 
        self.indent = "" 
 

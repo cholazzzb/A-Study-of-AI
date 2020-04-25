@@ -64,48 +64,48 @@ class HalmaPlayer03A(object):
         self.Pieces[self.PonderBoard.biggestDeltaMovePieceIndex].updatePosition(self.greedyMove)
 
     def getPlanMove(self):
-        print('FURTHEST PIECE INDEX', (self.PonderBoard.furthestPiece %100)-1)
+        # print('FURTHEST PIECE INDEX', (self.PonderBoard.furthestPiece %100)-1)
         # self.planMove = 
         print()
 
     def getEndMove(self, Model):
         self.destination = startPiecesPosition[((self.nomor+2)%4)-1]
-        print('DESTINATION', self.destination)
+        # print('DESTINATION', self.destination)
         for Piece in self.Pieces:
-            print("PIECE ", Piece.name, 'AtDestination',Piece.isAtDestination)
+            # print("PIECE ", Piece.name, 'AtDestination',Piece.isAtDestination)
             if Piece.isAtDestination == False:
-                print('SELECTED PIECE', Piece.name)
+                # print('SELECTED PIECE', Piece.name)
                 nearestDestination = self.PonderBoard.getNearestDestination(Piece, Model, self.destination)
                 self.endMove = self.PonderBoard.getMoveFromDestination(Piece, nearestDestination, AIVar)
-                print("GET MOVE FROM DESTINATION ENDMOVE", self.endMove)
+                # print("GET MOVE FROM DESTINATION ENDMOVE", self.endMove)
                 if self.endMove[0] != None:
                     Piece.updatePosition(self.endMove)
                     return 0
             else:
                 self.endMove = None, None, 2
-        print('CHECK THIS', self.endMove[0] == None)
+        # print('CHECK THIS', self.endMove[0] == None)
         if self.endMove[0] == None and self.PonderBoard.sumPiecesAtDestination < 10:
-            print('MOVE DESTINATION PIECE')
+            # print('MOVE DESTINATION PIECE')
             self.endMove = self.PonderBoard.moveDestinationPiece(self.nomor, nearestDestination, AIVar)
             y, x = self.endMove[1]
             pieceIndex = Model.getBidak(y, x)%100
             self.Pieces[pieceIndex].updatePosition(self.endMove)
 
     def easyMode(self, Model):
-        print("EASY MODE")
+        # print("EASY MODE")
 
         # EASIER MODE
         self.analyze(Model)
         self.getGreedyMove()
-        print("RANGE FPNP", self.PonderBoard.rangeBetweenFPNP)
-        print("BIGGEST DELTA", self.PonderBoard.biggestDelta)
-        print("GREEDY MOVE", self.greedyMove)
+        # print("RANGE FPNP", self.PonderBoard.rangeBetweenFPNP)
+        # print("BIGGEST DELTA", self.PonderBoard.biggestDelta)
+        # print("GREEDY MOVE", self.greedyMove)
         
         if self.greedyMove[0] != None:
             return self.greedyMove
         else:
             self.getEndMove(Model)
-            print('END MOVE', self.endMove)
+            # print('END MOVE', self.endMove)
             return self.endMove
 
         # IN DEVELOPMENT

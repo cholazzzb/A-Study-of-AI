@@ -50,9 +50,9 @@ class Piece(object):
     def updatePosition(self, decision):
         if decision[0] != None:
             self.position = decision[0][-1]
-        print('UPDATE POSITION')
-        print('PIECE ', self.name)
-        print('NEW POSITION ', self.position)
+        # print('UPDATE POSITION')
+        # print('PIECE ', self.name)
+        # print('NEW POSITION ', self.position)
 
     def checkIsAtDestination(self):
         y, x = self.rangeWithDestination
@@ -62,11 +62,11 @@ class Piece(object):
             self.isAtDestination = False
 
     def calculateLenLegalMoves(self):
-        print(self.legalMoves)
+        # print(self.legalMoves)
         if self.legalMoves[0] != None:
             for legalMove in self.legalMoves:
                 self.lenLegalMoves.append(len(legalMove[0]))
-        print('LEN LEGAL MOVES', self.lenLegalMoves)
+        # print('LEN LEGAL MOVES', self.lenLegalMoves)
             
     def calculateDeltaLegalMoves(self, destinationPoints):
         if self.legalMoves[0] != None:
@@ -78,13 +78,13 @@ class Piece(object):
                 rangeOld = (abs(yOld-yDest), abs(xOld-xDest))
                 yDelta, xDelta = (rangeOld[0]-rangeNew[0], rangeOld[1]-rangeNew[1])
                 self.deltaLegalMoves.append((yDelta, xDelta))
-        print('DELTA LEGAL MOVES', self.deltaLegalMoves)
+        # print('DELTA LEGAL MOVES', self.deltaLegalMoves)
 
     def calculateRangeWithDestination(self, destinationPoints):
         y, x = destinationPoints[self.player-1]
         ypos, xpos = self.position
         self.rangeWithDestination = (abs(y-ypos), abs(x-xpos))
-        print("RANGE WITH DESTINATION", self.rangeWithDestination)
+        # print("RANGE WITH DESTINATION", self.rangeWithDestination)
 
 
 
@@ -155,12 +155,12 @@ class PonderBoard(object):
         return jumpMoves
 
     def checkPieceLegalMoves(self, Piece):
-        print()
-        print('-----', Piece.name, "-----")
+        # print()
+        # print('-----', Piece.name, "-----")
         # Check Jumps Moves
         # First Loop
         jumpMoves = self.checkPieceJumpMoves(Piece.position, Piece.pieceDirections)
-        print('JUMPMOVES', jumpMoves)
+        # print('JUMPMOVES', jumpMoves)
         # After First Loop
         if len(jumpMoves) != 0:
             isCheckAgain = True
@@ -225,7 +225,7 @@ class PonderBoard(object):
                     longestLen = Pieces[pieceIndex].lenLegalMoves[pieceLenIndex]
                     thePieceIndex = pieceIndex
                     lenIndex = pieceLenIndex
-                    print('PIECE - LEN INDEX', thePieceIndex, lenIndex)
+                    # print('PIECE - LEN INDEX', thePieceIndex, lenIndex)
                     self.longestLenMovePieceIndex = thePieceIndex
         self.longestLenMove = Pieces[thePieceIndex].legalMoves[lenIndex]
                     
@@ -265,20 +265,20 @@ class PonderBoard(object):
             if Piece.isAtDestination:
                 self.sumPiecesAtDestination += 1
 
-        print('SUM PIECES AT DESTINATION = ', self.sumPiecesAtDestination)
+        # print('SUM PIECES AT DESTINATION = ', self.sumPiecesAtDestination)
 
     ## SPECIAL FUNCTION FOR ENDMODE
     def getNearestDestination(self, Piece, Model, destinations):
         nearest = 18
         nearestDestination = (10, 10)
         for destination in destinations:
-            print('APA ISI INI ', destination, Model.getBidak(destination[0], destination[1]))
+            # print('APA ISI INI ', destination, Model.getBidak(destination[0], destination[1]))
             if Model.getBidak(destination[0], destination[1]) == 0 or round(Model.getBidak(destination[0], destination[1])/100) != Piece.player :
                 if abs(Piece.position[0]-destination[0])+abs(Piece.position[1]-destination[0]) < nearest:
                     nearest = abs(Piece.position[0]-destination[0])+abs(Piece.position[1]-destination[0])
                     nearestDestination = destination
-        print("SELECTED NEAREST DESTINATION", nearestDestination)
-        print("PIECE POSITION", Piece.position)
+        # print("SELECTED NEAREST DESTINATION", nearestDestination)
+        # print("PIECE POSITION", Piece.position)
         return nearestDestination
 
 
