@@ -132,7 +132,8 @@ class HalmaPlayer03B(object):
     def normalMode(self, Model):
         print("NORMAL MODE")
 
-    def main(self, Model):        
+    def main(self, Model):    
+        # time.sleep(3)    
         return self.easyMode(Model)
 
 CustomBoard = [
